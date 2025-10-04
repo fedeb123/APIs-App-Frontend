@@ -1,4 +1,3 @@
-import { Header } from "../components/Header"
 import { Llamativo } from "../components/Llamativo"
 import { ProductoSeccion } from "../components/ProductoSeccion"
 import { Footer } from "../components/Footer"
