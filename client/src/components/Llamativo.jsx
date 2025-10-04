@@ -16,7 +16,7 @@ export function Llamativo() {
             Lo mejor para tu mascota!
           </h1>
           <p className="mb-8 text-pretty text-lg text-white/90 md:text-xl">
-            Registrate y Empeza a comprar!
+            Registrate y Empezá a comprar!
           </p>
           <Button size="lg" className="rounded-full px-8 text-base">
             Compra ahora y Ahorra!
