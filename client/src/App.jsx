@@ -6,6 +6,7 @@ import Tienda from "./views/Tienda"
 import Login from "./views/Login"
 import Perfil from "./views/Perfil"
 import Pedidos from "./views/Pedidos"
+import Admin from "./views/Admin"
 import { Header } from "./components/Header"
 
 
@@ -22,6 +23,7 @@ export default function App() {
           <Route path="/login" element={<Login/>} />
           <Route path="/perfil" element={<Perfil/>} />
           <Route path="/pedidos" element={<Pedidos/>} />
+          <Route path="/admin" element={<Admin/>} />
         </Routes>
       </main>
     </>
