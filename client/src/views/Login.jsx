@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate , Link} from "react-router-dom"
 import { Button } from "../components/ui/Button"
 import { Input } from "../components/ui/Input"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
@@ -48,7 +48,19 @@ export default function Login() {
               Entrar
             </Button>
           </form>
+          <div className="mt-6 text-center">
+            <p className="text-sm text-neutral-600">
+              ¿No tienes cuenta?{" "}
+              <Link
+                to="/register"
+                className="relative font-semibold text-primary before:absolute before:-bottom-1 before:left-0 before:h-[2px] before:w-0 before:bg-primary before:transition-all hover:before:w-full"
+              >
+                Créala aquí
+              </Link>
+            </p>
+          </div>
         </CardContent>
+        
       </Card>
     </div>
   )
