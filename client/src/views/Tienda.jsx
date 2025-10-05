@@ -144,11 +144,11 @@ export default function Tienda() {
                 <p className="text-gray-500 text-lg">No se encontraron productos</p>
               </Card>
             ) : (
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                 {filteredProducts.map((product) => (
                   <Card
                     key={product.id}
-                    className="overflow-hidden hover:shadow-xl transition-shadow duration-300 group"
+                    className="w-56 overflow-hidden hover:shadow-xl transition-shadow duration-300 group"
                   >
                     {/* Product Image */}
                     <div className="aspect-square bg-gradient-to-br from-orange-100 to-pink-100 p-6">
