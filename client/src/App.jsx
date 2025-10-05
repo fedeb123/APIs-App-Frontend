@@ -4,6 +4,7 @@ import Contacto from "./views/Contacto"
 import Nosotros from "./views/Nosotros"
 import Tienda from "./views/Tienda"
 import Login from "./views/Login"
+import Register from "./views/Register"
 import Perfil from "./views/Perfil"
 import Pedidos from "./views/Pedidos"
 import Admin from "./views/Admin"
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="/nosotros" element={<Nosotros/>} />
           <Route path="/tienda" element={<Tienda/>} />
           <Route path="/login" element={<Login/>} />
+          <Route path="/register" element={<Register/>} />
           <Route path="/perfil" element={<Perfil/>} />
           <Route path="/pedidos" element={<Pedidos/>} />
           <Route path="/admin" element={<Admin/>} />
