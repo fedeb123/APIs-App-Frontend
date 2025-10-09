@@ -53,6 +53,7 @@ export function Header() {
   }, [])
 
   const handleLoginClick = () => navigate("/login")
+  const handleRegisterClick = () => navigate("/register")
 
   const handleLogout = () => {
     localStorage.removeItem("user")
@@ -112,9 +113,14 @@ export function Header() {
 
           {/* Si NO hay usuario */}
           {!user ? (
-            <Button size="sm" className="rounded-full" onClick={handleLoginClick}>
-              Iniciar Sesión
-            </Button>
+            <>
+              <Button size="sm" className="rounded-full" onClick={handleLoginClick}>
+                Iniciar Sesión
+              </Button>
+              <Button size="sm" className="rounded-full" onClick={handleRegisterClick}>
+                Registrarse
+              </Button>
+            </>
           ) : (
             // Dropdown trigger + menu (un único trigger — evita lo de "dos textos")
             <div className="relative">
