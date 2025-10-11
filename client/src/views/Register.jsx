@@ -86,7 +86,7 @@ const Register=()=>{
 
         fetchPost(form)
 
-        //dispatch({type: 'RESET'})
+        dispatch({type: 'RESET'})
     };
 
 
