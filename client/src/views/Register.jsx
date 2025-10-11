@@ -18,6 +18,8 @@ const estadoInicialForm = {
 
 /*
 * useReducer es como una anidacion de useStates que tiene que ver entre si.
+* en vez de hacer un useState por input. useReducer aplica una funcion generica (reducer)
+* en la cual se repite el comportamiento pero por cada nombre de input
 * https://es.react.dev/reference/react/useReducer
 * @fedeb123
 */
