@@ -1,2 +1,9 @@
 # APIs-App-Frontend
 Desarrollo del Frontend para la materia Aplicaciones Interactivas (APIs) en UADE
+
+# Archivo .env
+Es necesario un archivo `.env` dentro de la carpeta `src` que contenga lo siguiente
+
+```
+VITE_APP_API_URL=<Direccion del Backend API> (https://localhost:8090/api)
+```

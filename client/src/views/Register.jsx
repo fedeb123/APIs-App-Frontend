@@ -1,26 +1,99 @@
-import { useState } from "react"
+import { useReducer} from "react"
 import { Button } from "../components/ui/Button"
 import { Input } from "../components/ui/Input"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
 import { Link } from "react-router-dom"
 
+const apiUrl  = import.meta.env.VITE_APP_API_URL
+
+
+const estadoInicialForm = {
+    nombre: '',
+    apellido: '',
+    email: '',
+    password: '',
+    confirmarPassword: '',
+    telefono: '',
+}
+
+/*
+* useReducer es como una anidacion de useStates que tiene que ver entre si.
+* https://es.react.dev/reference/react/useReducer
+* @fedeb123
+*/
+
+function reducer(state, action){
+    switch(action.type) {
+        case "ACTUALIZAR_CAMPO":
+            //...state porque no queremos tocar los demas campos sino actualizar
+            //el que este siendo cambiado
+            //sino por actualizar un campo, se defaultea todo y solo se actualiza ese campo
+            return {...state, [action.name]: action.value}
+        case "RESET":
+            return estadoInicialForm
+        default:
+            return state
+    }
+}
+
+function fetchPost(form) {
+    const URL = `${apiUrl}/v1/auth/register`
+
+    const data = {
+        nombre: form.nombre,
+        apellido: form.apellido,
+        telefono: form.telefono,
+        email: form.email,
+        password: form.password,
+        direccion: null,
+        rolId: 1            
+    }
+
+    console.log(JSON.stringify(data))
+
+    const options = {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    }
+
+    fetch(URL, options)
+    .then((response) => response.json())
+    .then((data) => {
+        console.log(data)
+        localStorage.setItem('jwtToken', data.accessToken)
+    })
+    .catch((error) => {
+        console.error(error)
+    })
+
+}
+
 const Register=()=>{
 
-    const [nombre,setNombre]=useState("")
-    const [email,setEmail]=useState("")
-    const [contraseña,setContraseña]=useState("")
-    const [confirmarContraseña,setConfirmarContraseña]=useState("")
+    const[form, dispatch] = useReducer(reducer, estadoInicialForm)
+
     const handleSubmit = (e) => {
         e.preventDefault();
         
-        if (contraseña !== confirmarContraseña) {
+        if (form.password !== form.confirmarPassword) {
             alert("Las contraseñas no coinciden");
             return;
         }
-        const newUser = { nombre, email };
-        localStorage.setItem("user", JSON.stringify(newUser));
-        alert("Registro exitoso");
+
+        fetchPost(form)
+
+        //dispatch({type: 'RESET'})
     };
+
+
+    const handleChange = (e) => {
+        dispatch({type: "ACTUALIZAR_CAMPO", name: e.target.name, value: e.target.value})
+    }
+
     return (
         <div className="flex h-screen items-center justify-center bg-background">
             <Card className="w-[350px] shadow-lg">
@@ -32,31 +105,51 @@ const Register=()=>{
                 <CardContent>
                     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                         <Input
+                        name="nombre"
                         type="text"
-                        placeholder="Nombre completo"
-                        value={nombre}
-                        onChange={(e) => setNombre(e.target.value)}
+                        placeholder="Nombre"
+                        value={form.nombre}
+                        onChange={handleChange}
                         required
                         />
                         <Input
-                        type="email"
-                        placeholder="Correo electrónico"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        name="apellido"
+                        type="text"
+                        placeholder="Apellido"
+                        value={form.apellido}
+                        onChange={handleChange}
                         required
                         />
                         <Input
+                        name="telefono"
+                        type="text"
+                        placeholder="Telefono"
+                        value={form.telefono}
+                        onChange={handleChange}
+                        required
+                        />
+                        <Input
+                        name="email"
+                        type="text"
+                        placeholder="email"
+                        value={form.email}
+                        onChange={handleChange}
+                        required
+                        />
+                        <Input
+                        name="password"
                         type="password"
                         placeholder="Contraseña"
-                        value={contraseña}
-                        onChange={(e) => setContraseña(e.target.value)}
+                        value={form.password}
+                        onChange={handleChange}
                         required
                         />
                         <Input
+                        name="confirmarPassword"
                         type="password"
                         placeholder="Confirmar contraseña"
-                        value={confirmarContraseña}
-                        onChange={(e) => setConfirmarContraseña(e.target.value)}
+                        value={form.confirmarPassword}
+                        onChange={handleChange}
                         required
                         />
                         <Button type="submit" className="w-full">
