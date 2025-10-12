@@ -4,19 +4,54 @@ import { Button } from "../components/ui/Button"
 import { Input } from "../components/ui/Input"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
 
+const apiUrl  = import.meta.env.VITE_APP_API_URL
+
+function fetchLogin(loginEmail, loginPassword) {
+    const URL = `${apiUrl}/v1/auth/authenticate`
+
+    const data = {
+      email: loginEmail,
+      password: loginPassword,
+    }
+
+    console.log(JSON.stringify(data))
+
+    const options = {
+      method: 'POST',
+      headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    }
+
+    fetch(URL, options)
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(data)
+      localStorage.setItem('jwtToken', data.accessToken)
+    })
+    .catch((error) => {
+      console.error(error)
+    })
+}
+
+
+
+
+
 export default function Login() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const navigate = useNavigate()
+  let navigate = useNavigate()
+
+
+
 
   const handleSubmit = (e) => {
     e.preventDefault()
-
-    // Simulación de login (en real iría API)
-    const fakeUser = { name: "Nicolas", email }
-    localStorage.setItem("user", JSON.stringify(fakeUser))
-
-    navigate("/") // vuelve al inicio
+    fetchLogin(email, password)
+    navigate("/tienda") // vuelve al inicio
     window.location.reload() // refresca Header
   }
 
@@ -31,6 +66,7 @@ export default function Login() {
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <Input
+              name="email"
               type="email"
               placeholder="Correo electrónico"
               value={email}
@@ -38,6 +74,7 @@ export default function Login() {
               required
             />
             <Input
+              name="email"
               type="password"
               placeholder="Contraseña"
               value={password}
