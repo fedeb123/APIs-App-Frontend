@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { Search } from "lucide-react"
+import { Search, User } from "lucide-react"
 import { Button } from "./ui/Button"
 import { Input } from "./ui/Input"
 
@@ -14,8 +14,8 @@ export function Header() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user")
-    if (storedUser) setUser(JSON.parse(storedUser))
+    const storedUserToken = localStorage.getItem("jwtToken")
+    if (storedUserToken) setUser(storedUserToken)
   }, [])
 
   // scroll hide header
@@ -56,7 +56,7 @@ export function Header() {
   const handleRegisterClick = () => navigate("/register")
 
   const handleLogout = () => {
-    localStorage.removeItem("user")
+    localStorage.removeItem("jwtToken")
     setUser(null)
     setOpen(false)
     navigate("/")
@@ -122,57 +122,13 @@ export function Header() {
               </Button>
             </>
           ) : (
-            // Dropdown trigger + menu (un único trigger — evita lo de "dos textos")
-            <div className="relative">
-              {/* Trigger */}
-              <button
-                ref={buttonRef}
-                onClick={toggleOpen}
-                aria-haspopup="menu"
-                aria-expanded={open}
-                className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium ring-offset-background transition hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <span className="hidden sm:inline">Hola, {user.name}</span>
-                <svg
-                  className={`h-4 w-4 transition-transform ${open ? "rotate-180" : "rotate-0"}`}
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  stroke="currentColor"
-                >
-                  <path d="M6 8l4 4 4-4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
-
-              {/* Dropdown */}
-              {open && (
-                <div
-                  ref={dropdownRef}
-                  className="absolute right-0 z-50 mt-2 w-44 overflow-hidden rounded-lg border bg-popover p-2 shadow-lg"
-                >
-                  <Link
-                    to="/perfil"
-                    className="block rounded-md px-3 py-2 text-sm hover:bg-primary/5"
-                    onClick={() => setOpen(false)}
-                  >
-                    Perfil
-                  </Link>
-                  <Link
-                    to="/pedidos"
-                    className="block rounded-md px-3 py-2 text-sm hover:bg-primary/5"
-                    onClick={() => setOpen(false)}
-                  >
-                    Mis Pedidos
-                  </Link>
-                  <hr className="my-1 border-t" />
-                  <button
-                    onClick={handleLogout}
-                    className="w-full rounded-md px-3 py-2 text-left text-sm hover:bg-destructive/10"
-                  >
-                    Cerrar Sesión
-                  </button>
-                </div>
-              )}
-            </div>
+            <Link
+              to="/perfil"
+              className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium ring-offset-background transition hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <User className="h-5 w-5" />
+              <span>Mi Perfil</span>
+            </Link>
           )}
         </div>
       </div>
