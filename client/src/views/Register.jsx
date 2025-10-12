@@ -1,10 +1,11 @@
-import { useReducer} from "react"
+import { useReducer, useNavigate } from "react"
 import { Button } from "../components/ui/Button"
 import { Input } from "../components/ui/Input"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
 import { Link } from "react-router-dom"
 
 const apiUrl  = import.meta.env.VITE_APP_API_URL
+
 
 
 const estadoInicialForm = {
@@ -75,6 +76,7 @@ function fetchPost(form) {
 }
 
 const Register=()=>{
+    let navigate = useNavigate()
 
     const[form, dispatch] = useReducer(reducer, estadoInicialForm)
 
@@ -89,6 +91,9 @@ const Register=()=>{
         fetchPost(form)
 
         dispatch({type: 'RESET'})
+
+        navigate('/tienda')
+        
     };
 
 
@@ -124,7 +129,7 @@ const Register=()=>{
                         />
                         <Input
                         name="telefono"
-                        type="text"
+                        type="tel"
                         placeholder="Telefono"
                         value={form.telefono}
                         onChange={handleChange}
@@ -132,7 +137,7 @@ const Register=()=>{
                         />
                         <Input
                         name="email"
-                        type="text"
+                        type="email"
                         placeholder="email"
                         value={form.email}
                         onChange={handleChange}
