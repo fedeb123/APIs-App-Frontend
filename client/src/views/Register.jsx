@@ -1,12 +1,9 @@
-import { useReducer, useNavigate } from "react"
+import { useEffect, useReducer, useState } from "react"
 import { Button } from "../components/ui/Button"
 import { Input } from "../components/ui/Input"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
-import { Link } from "react-router-dom"
-
-const apiUrl  = import.meta.env.VITE_APP_API_URL
-
-
+import { Link, useNavigate } from "react-router-dom"
+import useFetch from "../hooks/useFetch"
 
 const estadoInicialForm = {
     nombre: '',
@@ -39,46 +36,12 @@ function reducer(state, action){
     }
 }
 
-function fetchPost(form) {
-    const URL = `${apiUrl}/v1/auth/register`
-
-    const data = {
-        nombre: form.nombre,
-        apellido: form.apellido,
-        telefono: form.telefono,
-        email: form.email,
-        password: form.password,
-        direccion: null,
-        rolId: 1            
-    }
-
-    console.log(JSON.stringify(data))
-
-    const options = {
-        method: 'POST',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    }
-
-    fetch(URL, options)
-    .then((response) => response.json())
-    .then((data) => {
-        console.log(data)
-        localStorage.setItem('jwtToken', data.accessToken)
-    })
-    .catch((error) => {
-        console.error(error)
-    })
-
-}
-
 const Register=()=>{
     let navigate = useNavigate()
 
     const[form, dispatch] = useReducer(reducer, estadoInicialForm)
+    const [payload, setPayload] = useState(null)
+    const { response, loading, error } = useFetch('v1/auth/register', 'POST', payload)
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -88,14 +51,33 @@ const Register=()=>{
             return;
         }
 
-        fetchPost(form)
+        const data = {
+            nombre: form.nombre,
+            apellido: form.apellido,
+            telefono: form.telefono,
+            email: form.email,
+            password: form.password,
+            direccion: null,
+            rolId: 1            
+        }
 
-        dispatch({type: 'RESET'})
-
-        navigate('/tienda')
-        
+        setPayload(data)
     };
 
+    useEffect(() => {
+        if (error) {
+            alert(`Ha ocurrido un error en el registro: ${error}`)
+        }
+    }, [error])
+
+    useEffect(() => {
+        if (response) {
+            localStorage.setItem('jwtToken', response.accessToken)
+            dispatch({type: 'RESET'})
+            navigate('/tienda')
+            window.location.reload() // refresca el header
+        }
+    }, [response])
 
     const handleChange = (e) => {
         dispatch({type: "ACTUALIZAR_CAMPO", name: e.target.name, value: e.target.value})
@@ -168,9 +150,7 @@ const Register=()=>{
                         <p className="text-sm text-neutral-600">
                             ¿Ya tenés cuenta?{" "}
                             <Link to="/login" className="inline-block" aria-label="Iniciar Sesion">
-                            <Button size="sm" className="rounded-full" onClick={() => {
-                                setShowModal(false)
-                            }}>
+                            <Button size="sm" className="rounded-full">
                             Iniciá sesión
                             </Button>
                         </Link>

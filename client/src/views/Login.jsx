@@ -1,59 +1,41 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useNavigate , Link} from "react-router-dom"
 import { Button } from "../components/ui/Button"
 import { Input } from "../components/ui/Input"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
-
-const apiUrl  = import.meta.env.VITE_APP_API_URL
-
-function fetchLogin(loginEmail, loginPassword) {
-    const URL = `${apiUrl}/v1/auth/authenticate`
-
-    const data = {
-      email: loginEmail,
-      password: loginPassword,
-    }
-
-    console.log(JSON.stringify(data))
-
-    const options = {
-      method: 'POST',
-      headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
-    }
-
-    fetch(URL, options)
-    .then((response) => response.json())
-    .then((data) => {
-      console.log(data)
-      localStorage.setItem('jwtToken', data.accessToken)
-    })
-    .catch((error) => {
-      console.error(error)
-    })
-}
-
-
-
-
+import useFetch from "../hooks/useFetch"
 
 export default function Login() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [payload, setPayload] = useState(null)
+  const { response, loading, error } = useFetch('v1/auth/register', 'POST', payload) 
   let navigate = useNavigate()
-
-
-
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    fetchLogin(email, password)
-    navigate("/tienda") // vuelve al inicio
-    window.location.reload() // refresca Header
+    
+    const data = {
+      email: email,
+      password: password,
+    }
+
+    setPayload(data)
   }
+
+  useEffect(() => {
+    if (response) {
+        localStorage.setItem('jwtToken', response.accessToken)
+        navigate('/tienda')
+        window.location.reload() // refresca el header
+    }
+  }, [response])
+
+  useEffect(() => {
+    if (error) {
+      alert(`Ha ocurrido un error en el registro: ${error}`)
+    }
+  }, [error])
 
   return (
     <div className="flex h-screen items-center justify-center bg-background">
