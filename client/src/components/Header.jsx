@@ -107,8 +107,6 @@ export function Header() {
         {/* Búsqueda + Sesión */}
         <div className="flex items-center gap-3">
           <div className="relative hidden md:block">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input type="search" placeholder="Buscar Producto" className="w-[200px] pl-9 lg:w-[250px]" />
           </div>
 
           {/* Si NO hay usuario */}
