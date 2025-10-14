@@ -1,111 +1,94 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Input } from "../components/ui/Input"
 import { Card } from "../components/ui/Card"
 import { Button } from "../components/ui/Button"
 import { Search, ShoppingCart } from "lucide-react"
+import useFetch from "../hooks/useFetch"
 
-const products = [
-  {
-    id: 1,
-    title: "Comida Premium para Perros",
-    category: "alimentos",
-    description: "Alimento balanceado de alta calidad con proteínas naturales.",
-    image: "/bowl-of-premium-pet-food-kibble-on-teal-background.jpg",
-    price: 45.99,
-    stock: 23,
-  },
-  {
-    id: 2,
-    title: "Comida para Gatos",
-    category: "alimentos",
-    description: "Nutrición completa para gatos de todas las edades.",
-    image: "/bowl-of-premium-pet-food-kibble-on-teal-background.jpg",
-    price: 38.5,
-    stock: 15,
-  },
-  {
-    id: 3,
-    title: "Pelota Interactiva",
-    category: "juguetes",
-    description: "Juguete resistente para horas de diversión.",
-    image: "/colorful-pet-toys-rope-balls-on-light-blue-backgro.jpg",
-    price: 12.99,
-    stock: 45,
-  },
-  {
-    id: 4,
-    title: "Cuerda de Juego",
-    category: "juguetes",
-    description: "Perfecta para juegos de tira y afloja.",
-    image: "/colorful-pet-toys-rope-balls-on-light-blue-backgro.jpg",
-    price: 8.99,
-    stock: 32,
-  },
-  {
-    id: 5,
-    title: "Collar de Cuero",
-    category: "accesorios",
-    description: "Collar elegante y duradero para tu mascota.",
-    image: "/blue-leather-pet-collar-on-light-gray-background-p.jpg",
-    price: 24.99,
-    stock: 18,
-  },
-  {
-    id: 6,
-    title: "Correa Ajustable",
-    category: "accesorios",
-    description: "Correa resistente con longitud ajustable.",
-    image: "/blue-leather-pet-collar-on-light-gray-background-p.jpg",
-    price: 19.99,
-    stock: 27,
-  },
-  {
-    id: 7,
-    title: "Snacks Naturales",
-    category: "alimentos",
-    description: "Premios saludables sin conservantes artificiales.",
-    image: "/bowl-of-premium-pet-food-kibble-on-teal-background.jpg",
-    price: 15.99,
-    stock: 8,
-  },
-  {
-    id: 8,
-    title: "Arnés Deportivo",
-    category: "accesorios",
-    description: "Arnés cómodo para actividades al aire libre.",
-    image: "/blue-leather-pet-collar-on-light-gray-background-p.jpg",
-    price: 32.99,
-    stock: 12,
-  },
-]
+const imagesUrl  = import.meta.env.VITE_APP_API_IMAGES_URL
 
 export default function Tienda() {
   const [search, setSearch] = useState("")
   const [filter, setFilter] = useState("todos")
+  const [products, setProducts] = useState([])
+  const [categories, setCategories] = useState([])
+  const [filteredProducts, setFilteredProducts] = useState([])
 
-  const filteredProducts = products.filter((p) => {
-    const matchesSearch = p.title.toLowerCase().includes(search.toLowerCase())
-    const matchesFilter = filter === "todos" || p.category === filter
-    return matchesSearch && matchesFilter
-  })
+  const { response: productsContent, loading: loadingProducts, error: errorProducts } = useFetch('productos')
+  const { response: categoriesContent, loading: loadingCategories, error: errorCategories } = useFetch('categorias')
 
-  const categories = [
-    { id: "todos", label: "Todos los Productos" },
-    { id: "alimentos", label: "Alimentos" },
-    { id: "juguetes", label: "Juguetes" },
-    { id: "accesorios", label: "Accesorios" },
-  ]
+  //TESTERS
+  // const loadingProducts = false
+  // const loadingCategories = false
+  // const categoriesContent = undefined
+  // const productsContent = undefined
+  // const errorProducts = false
+  // const errorCategories = false
+
+  useEffect(() => {
+    if(products && categories) {
+      setFilteredProducts(
+        products.filter((p) => {
+          const matchesSearch = p.nombre.toLowerCase().includes(search.toLowerCase())
+          const matchesFilter = filter === "todos" || p.categoriaId === filter
+          return matchesSearch && matchesFilter
+        })
+      )
+    }
+  }, [categories, products, search, filter])
+
+  useEffect(() => {
+    setProducts(productsContent?.content ?? [])
+  }, [productsContent])
+
+  useEffect(() => {
+    setCategories(categoriesContent?.content ?? [])
+    console.log(categories)
+  }, [categoriesContent])
+
+  useEffect(() => {
+    if (errorProducts) {
+      console.error(errorProducts)
+    }
+
+    if (errorCategories) {
+      console.error(errorCategories)
+    }
+
+  }, [errorProducts, errorCategories])
 
   return (
     <div className="min-h-screen">
       <div className="container mx-auto px-4 py-8">
         <h1 className="mb-8 text-4xl font-bold text-gray-800">Tienda</h1>
 
-        <div className="flex flex-col gap-6 lg:flex-row">
+          <div className="flex flex-col gap-6 lg:flex-row">
           <aside className="lg:w-64 shrink-0">
+
+            {loadingCategories && (
+              <Card className="p-6 sticky top-4">
+                Cargando Categorias...
+              </Card>
+            )}
+
+            {(errorCategories) && (
+              <Card className="p-6 sticky top-4">
+                Error obteniendo categorias: {`${errorCategories}`}
+              </Card>
+            )}
+
+            {(!loadingCategories && !errorCategories) && (
             <Card className="p-6 sticky top-4">
               <h2 className="text-lg font-semibold mb-4 text-gray-800">Categorías</h2>
               <nav className="space-y-2">
+                <button className={`w-full text-left px-4 py-3 rounded-lg transition-all ${
+                      filter === "todos"
+                        ? "bg-orange-500 text-white font-medium shadow-md"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`} onClick={() => setFilter("todos")}
+                >
+                  Todos
+                </button>
                 {categories.map((cat) => (
                   <button
                     key={cat.id}
@@ -116,7 +99,7 @@ export default function Tienda() {
                         : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
                   >
-                    {cat.label}
+                    {cat.nombreCategoria}
                   </button>
                 ))}
               </nav>
@@ -136,53 +119,62 @@ export default function Tienda() {
                 </div>
               </div>
             </Card>
+            )}
           </aside>
 
           <main className="flex-1">
-            {filteredProducts.length === 0 ? (
+            
+            {(loadingCategories || loadingProducts)&& (
               <Card className="p-12 text-center">
-                <p className="text-gray-500 text-lg">No se encontraron productos</p>
+                <p className="text-gray-500 text-lg">Cargando productos..</p>
               </Card>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {filteredProducts.map((product) => (
-                  <Card
-                    key={product.id}
-                    className="w-56 overflow-hidden hover:shadow-xl transition-shadow duration-300 group"
-                  >
-                    {/* Product Image */}
-                    <div className="aspect-square bg-gradient-to-br from-orange-100 to-pink-100 p-6">
-                      <img
-                        src={product.image || "/placeholder.svg"}
-                        alt={product.title}
-                        className="h-full w-full object-contain group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
+            )}
 
-                    {/* Product Info */}
-                    <div className="p-4 space-y-3">
-                      <h3 className="font-semibold text-lg text-gray-800 line-clamp-1">{product.title}</h3>
+            {(errorProducts)&& (
+              <Card className="p-12 text-center">
+                <p className="text-gray-500 text-lg">Error obteniendo productos: {`${errorProducts}`}</p>
+              </Card>
+            )}
 
-                      <p className="text-sm text-gray-600 line-clamp-2">{product.description}</p>
-
-                      {/* Stock and Price */}
-                      <div className="flex items-center justify-between pt-2">
-                        <div>
-                          <p className="text-2xl font-bold text-orange-600">${product.price}</p>
-                          <p className={`text-xs ${product.stock < 10 ? "text-red-500" : "text-green-600"}`}>
-                            {product.stock < 10 ? `¡Solo ${product.stock} disponibles!` : `${product.stock} en stock`}
-                          </p>
-                        </div>
-
-                        <Button size="sm" className="gap-2" disabled={product.stock === 0}>
-                          <ShoppingCart className="h-4 w-4" />
-                          Agregar
-                        </Button>
+            {(!loadingCategories && !loadingProducts && !errorCategories && !errorProducts) && (
+              filteredProducts.length === 0 ? (
+                <Card className="p-12 text-center">
+                  <p className="text-gray-500 text-lg">No se encontraron productos</p>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {filteredProducts.map((product) => (
+                    <Card
+                      key={product.id}
+                      className="w-56 overflow-hidden hover:shadow-xl transition-shadow duration-300 group"
+                    >
+                      <div className="aspect-square bg-gradient-to-br from-orange-100 to-pink-100 p-6">
+                        <img
+                          src={product.imageUrl ? imagesUrl + product.imageUrl : '/placeholder.svg'}
+                          alt={product.nombre}
+                          className="h-full w-full object-contain group-hover:scale-105 transition-transform duration-300"
+                        />
                       </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
+                      <div className="p-4 space-y-3">
+                        <h3 className="font-semibold text-lg text-gray-800 line-clamp-1">{product.nombre}</h3>
+                        <p className="text-sm text-gray-600 line-clamp-2">{product.descripcion}</p>
+                        <div className="flex items-center justify-between pt-2">
+                          <div>
+                            <p className="text-2xl font-bold text-orange-600">${product.precio}</p>
+                            <p className={`text-xs ${product.stock < 10 ? "text-red-500" : "text-green-600"}`}>
+                              {product.stock < 10 ? `¡Solo ${product.stock} disponibles!` : `${product.stock} en stock`}
+                            </p>
+                          </div>
+                          <Button size="sm" className="gap-2" disabled={product.stock === 0}>
+                            <ShoppingCart className="h-4 w-4" />
+                            Agregar
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )
             )}
           </main>
         </div>
