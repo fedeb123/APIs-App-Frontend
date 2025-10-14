@@ -24,10 +24,11 @@ export default function useFetch(location, data = null, token = null) {
     }
 
     if (token) {
-        options.Authorization = `Bearer ${token}`
+        options.headers.Authorization = `Bearer ${token}`
     }
 
     useEffect(() => {
+        setLoading(true)
         fetch(url, options)
         .then((responseData) => responseData.json())
         .then((responseJson) => {
@@ -38,7 +39,7 @@ export default function useFetch(location, data = null, token = null) {
             setError(error)
             setLoading(false)
         })
-    }, [location, data, token])
+    }, [location, token])
 
     return { response, loading, error}
 }
