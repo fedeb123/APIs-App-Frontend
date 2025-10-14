@@ -6,4 +6,5 @@ Es necesario un archivo `.env` dentro de la carpeta `src` que contenga lo siguie
 
 ```
 VITE_APP_API_URL=<Direccion del Backend API> (https://localhost:8090/api)
+VITE_APP_API_IMAGES_URL=<Direccion del Backend> (http://localhost:8090)
 ```
