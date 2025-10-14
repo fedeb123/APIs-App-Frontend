@@ -8,13 +8,12 @@ const imagesUrl  = import.meta.env.VITE_APP_API_IMAGES_URL
 export function ProductoSeccion() {
 
 const [products, setProducts] = useState([])
-const { response: productsContent, loading, error } = useFetch('productos', 'GET')
+const { response: productsContent, loading, error } = useFetch('productos/validos', 'GET')
 
 
 useEffect(() => {
   if (productsContent) {
     setProducts(productsContent?.content ?? [])
-    setProducts(products.splice(3))
   }
 }, [productsContent])
 
@@ -28,7 +27,7 @@ useEffect(() => {
     <section className="container mx-auto px-4 py-12 md:px-6 md:py-16">
       <h2 className="mb-10 text-3xl font-bold md:text-4xl">Nuestra Seleccion de Productos</h2>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {products.map((product) => (
+        {products.slice(0, 3).map((product) => (
           <Card
             key={product.id}
             className={`group overflow-hidden rounded-3xl border-0 ${product.bgColor} transition-transform hover:scale-[1.02]`}
