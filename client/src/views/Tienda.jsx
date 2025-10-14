@@ -14,8 +14,8 @@ export default function Tienda() {
   const [categories, setCategories] = useState([])
   const [filteredProducts, setFilteredProducts] = useState([])
 
-  const { response: productsContent, loading: loadingProducts, error: errorProducts } = useFetch('productos')
-  const { response: categoriesContent, loading: loadingCategories, error: errorCategories } = useFetch('categorias')
+  const { response: productsContent, loading: loadingProducts, error: errorProducts } = useFetch('productos', 'GET')
+  const { response: categoriesContent, loading: loadingCategories, error: errorCategories } = useFetch('categorias', 'GET')
 
   //TESTERS
   // const loadingProducts = false

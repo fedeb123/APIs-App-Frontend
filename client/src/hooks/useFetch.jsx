@@ -2,24 +2,24 @@ import { useEffect, useState } from "react";
 
 const apiUrl  = import.meta.env.VITE_APP_API_URL
 
-export default function useFetch(location, data = null, token = null) {
+export default function useFetch(location, method, data = null, token = null) {
     
     const [loading, setLoading] = useState(true)
     const [response, setResponse] = useState(null)
     const [error, setError] = useState(null)
 
     let options = {
+        'method': method,
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
         }
     }
 
-    const method = data ? 'POST' : 'GET'
+    
     const url = `${apiUrl}/${location}`
 
     if (data) {
-        options.method = method
         options.body = JSON.stringify(data)
     }
 
@@ -29,6 +29,11 @@ export default function useFetch(location, data = null, token = null) {
 
     useEffect(() => {
         setLoading(true)
+
+        if (method === 'POST' && !data) {
+            return
+        }
+
         fetch(url, options)
         .then((responseData) => responseData.json())
         .then((responseJson) => {
@@ -39,7 +44,7 @@ export default function useFetch(location, data = null, token = null) {
             setError(error)
             setLoading(false)
         })
-    }, [location, token])
+    }, [location, token, JSON.stringify(data)])
 
     return { response, loading, error}
 }
