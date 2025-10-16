@@ -43,16 +43,15 @@ export default function Tienda() {
 
   useEffect(() => {
     setCategories(categoriesContent?.content ?? [])
-    console.log(categories)
   }, [categoriesContent])
 
   useEffect(() => {
     if (errorProducts) {
-      console.error(errorProducts)
+      console.error(JSON.stringify(errorProducts))
     }
 
     if (errorCategories) {
-      console.error(errorCategories)
+      console.error(JSON.stringify(errorCategories))
     }
 
   }, [errorProducts, errorCategories])

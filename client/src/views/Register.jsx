@@ -66,7 +66,8 @@ const Register=()=>{
 
     useEffect(() => {
         if (error) {
-            alert(`Ha ocurrido un error en el registro: ${error}`)
+            console.error(JSON.stringify(error))
+            alert(`Ha ocurrido un error en el registro: ${JSON.stringify(error)}`)
         }
     }, [error])
 

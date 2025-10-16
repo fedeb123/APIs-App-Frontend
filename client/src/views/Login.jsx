@@ -9,7 +9,7 @@ export default function Login() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [payload, setPayload] = useState(null)
-  const { response, loading, error } = useFetch('v1/auth/register', 'POST', payload) 
+  const { response, loading, error } = useFetch('v1/auth/authenticate', 'POST', payload) 
   let navigate = useNavigate()
 
   const handleSubmit = (e) => {
@@ -19,7 +19,6 @@ export default function Login() {
       email: email,
       password: password,
     }
-
     setPayload(data)
   }
 
@@ -33,7 +32,8 @@ export default function Login() {
 
   useEffect(() => {
     if (error) {
-      alert(`Ha ocurrido un error en el registro: ${error}`)
+      console.error(JSON.stringify(error))
+      alert(`Ha ocurrido un error en el logueo: ${JSON.stringify(error)}`)
     }
   }, [error])
 
