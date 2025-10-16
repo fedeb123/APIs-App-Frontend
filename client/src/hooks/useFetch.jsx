@@ -39,7 +39,8 @@ export default function useFetch(location, method, data = null, token = null) {
         .then((responseData) => responseData.json().then((responseJson) => ({responseData, responseJson})))
         .then(({responseData, responseJson}) => {                        
             if (!responseData.ok) {
-                setError({ status: responseData.status, body: responseJson})
+                console.log(responseData)
+                setError({ status: responseData.status, body: responseJson.error})
             } else {
                 setResponse(responseJson)
             }
