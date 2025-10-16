@@ -170,7 +170,7 @@ export default function Perfil() {
         <div className="flex gap-4 mb-8 border-b border-gray-200">
           <button
             onClick={() => setActiveTab("perfil")}
-            className={`flex items-center gap-2 px-6 py-3 font-medium transition-colors ${
+            className={`flex items-center gap-2 px-6 py-3 font-medium transition-colors hover:text-primary ${
               activeTab === "perfil"
                 ? "text-orange-600 border-b-2 border-orange-600"
                 : "text-gray-600 hover:text-gray-900"
@@ -181,7 +181,7 @@ export default function Perfil() {
           </button>
           <button
             onClick={() => setActiveTab("pedidos")}
-            className={`flex items-center gap-2 px-6 py-3 font-medium transition-colors ${
+            className={`flex items-center gap-2 px-6 py-3 font-medium transition-colors hover:text-primary ${
               activeTab === "pedidos"
                 ? "text-orange-600 border-b-2 border-orange-600"
                 : "text-gray-600 hover:text-gray-900"
