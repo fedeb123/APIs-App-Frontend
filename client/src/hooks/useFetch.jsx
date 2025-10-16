@@ -15,7 +15,6 @@ export default function useFetch(location, method, data = null, token = null) {
             'Content-Type': 'application/json',
         }
     }
-
     
     const url = `${apiUrl}/${location}`
 
@@ -37,7 +36,13 @@ export default function useFetch(location, method, data = null, token = null) {
         fetch(url, options)
         .then((responseData) => responseData.json())
         .then((responseJson) => {
-            setResponse(responseJson)
+
+            if (responseJson.ok) {
+                setResponse(responseJson)
+            } else {
+                setError({ status: responseJson.status, body: responseJson})
+            }
+
             setLoading(false)
         })
         .catch((error) => {
@@ -46,5 +51,5 @@ export default function useFetch(location, method, data = null, token = null) {
         })
     }, [location, token, JSON.stringify(data)])
 
-    return { response, loading, error}
+    return { response, loading, error }
 }
