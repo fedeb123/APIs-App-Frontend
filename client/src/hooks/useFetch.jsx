@@ -7,6 +7,8 @@ export default function useFetch(location, method, data = null, token = null) {
     const [loading, setLoading] = useState(true)
     const [response, setResponse] = useState(null)
     const [error, setError] = useState(null)
+    const [status, setStatus] = useState(null)
+    const [ok, setOk] = useState(false)
 
     let options = {
         'method': method,
@@ -34,21 +36,19 @@ export default function useFetch(location, method, data = null, token = null) {
         }
 
         fetch(url, options)
-        .then((responseData) => responseData.json())
-        .then((responseJson) => {
-
-            if (responseJson.ok) {
-                setResponse(responseJson)
+        .then((responseData) => responseData.json().then((responseJson) => ({responseData, responseJson})))
+        .then(({responseData, responseJson}) => {                        
+            if (!responseData.ok) {
+                setError({ status: responseData.status, body: responseJson})
             } else {
-                setError({ status: responseJson.status, body: responseJson})
+                setResponse(responseJson)
             }
-
-            setLoading(false)
         })
         .catch((error) => {
             setError(error)
             setLoading(false)
         })
+        .finally(() => setLoading(false))
     }, [location, token, JSON.stringify(data)])
 
     return { response, loading, error }
