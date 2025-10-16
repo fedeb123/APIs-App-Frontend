@@ -66,7 +66,7 @@ export default function Perfil() {
     if(!userLoading && userResponse) {
       setUser(userResponse)
       setLocationPut(`usuarios/${userResponse.id}`)
-      setLocationPedidos(`pedidos/usuario?usuarioEmail=${userResponse.email}`)
+      setLocationPedidos(`pedidos/usuario`)
     }
   }, [userLoading, userResponse])
 
