@@ -29,7 +29,7 @@ export default function useFetch(location, method, data = null, token = null, re
     useEffect(() => {
         setLoading(true)
 
-        if (method === 'POST' && !data) {
+        if ((method === 'POST' || method === 'PUT') && !data) {
             setLoading(false)
             return
         }
