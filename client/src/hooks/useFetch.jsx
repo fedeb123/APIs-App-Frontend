@@ -30,6 +30,12 @@ export default function useFetch(location, method, data = null, token = null, re
         setLoading(true)
 
         if (method === 'POST' && !data) {
+            setLoading(false)
+            return
+        }
+
+        if (!location) {
+            setLoading(false)
             return
         }
 
