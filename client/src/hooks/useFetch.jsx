@@ -2,13 +2,11 @@ import { useEffect, useState } from "react";
 
 const apiUrl  = import.meta.env.VITE_APP_API_URL
 
-export default function useFetch(location, method, data = null, token = null) {
+export default function useFetch(location, method, data = null, token = null, refresh = false) {
     
     const [loading, setLoading] = useState(true)
     const [response, setResponse] = useState(null)
     const [error, setError] = useState(null)
-    const [status, setStatus] = useState(null)
-    const [ok, setOk] = useState(false)
 
     let options = {
         'method': method,
@@ -50,7 +48,7 @@ export default function useFetch(location, method, data = null, token = null) {
             setLoading(false)
         })
         .finally(() => setLoading(false))
-    }, [location, token, JSON.stringify(data)])
+    }, [location, token, JSON.stringify(data), refresh])
 
     return { response, loading, error }
 }
