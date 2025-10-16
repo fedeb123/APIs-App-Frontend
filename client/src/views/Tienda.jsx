@@ -1,21 +1,35 @@
 import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { Input } from "../components/ui/Input"
 import { Card } from "../components/ui/Card"
 import { Button } from "../components/ui/Button"
-import { Search, ShoppingCart } from "lucide-react"
+import { Search, ShoppingCart, X } from "lucide-react"
 import useFetch from "../hooks/useFetch"
+import useUser from "../hooks/useUser"
 
 const imagesUrl  = import.meta.env.VITE_APP_API_IMAGES_URL
 
 export default function Tienda() {
   const [search, setSearch] = useState("")
+  const [showModal, setShowModal] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState(null)
+  const [productosComprados, setProductosComprados] = useState([])
   const [filter, setFilter] = useState("todos")
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
   const [filteredProducts, setFilteredProducts] = useState([])
+  const [user, setUser] = useState(null)
+  const [quantity, setQuantity] = useState(1)
+  const [payload, setPayload] = useState(null)
+
+  const [token, setToken] = useState(localStorage.getItem('jwtToken'))
+  const { user: responseUser, loading } = useUser(token)
+
+  const navigate = useNavigate()
 
   const { response: productsContent, loading: loadingProducts, error: errorProducts } = useFetch('productos', 'GET')
   const { response: categoriesContent, loading: loadingCategories, error: errorCategories } = useFetch('categorias', 'GET')
+  const { response: responsePost, loading: loadingPost, error: errorPost } = useFetch('pedidos', 'POST', payload, token)
 
   //TESTERS
   // const loadingProducts = false
@@ -36,6 +50,11 @@ export default function Tienda() {
       )
     }
   }, [categories, products, search, filter])
+  useEffect(() => {
+    if (errorPost) {
+      console.error(JSON.stringify(errorPost))
+    }
+  }, [errorPost])
 
   useEffect(() => {
     setProducts(productsContent?.content ?? [])
@@ -44,6 +63,13 @@ export default function Tienda() {
   useEffect(() => {
     setCategories(categoriesContent?.content ?? [])
   }, [categoriesContent])
+
+
+  useEffect(() => {
+    if (responseUser && !loading) {
+      setUser(responseUser)
+    }
+  }, [responseUser, loading])
 
   useEffect(() => {
     if (errorProducts) {
@@ -56,8 +82,54 @@ export default function Tienda() {
 
   }, [errorProducts, errorCategories])
 
+  const handleAgregarProducto = (product) => {
+    if (!user || !token) {
+      alert("Tienes que estar logueado para comprar, obviamente")
+      navigate('/login')
+      return
+    }
+    setSelectedProduct(product)
+    setShowModal(true)
+    setQuantity(1)
+  }
+
+  const closeModal = () => {
+    setShowModal(false)
+    setSelectedProduct(null)
+    setQuantity(1)
+  }
+
+  //handleComprar seria luego handleAgregarAlCarrito
+  const handleComprar = (product) => {
+    if (!user || !token) {
+      alert("Tienes que estar logueado para comprar, obviamente")
+      navigate('/login')
+      return
+    }
+    setProductosComprados([...productosComprados, { ...product, cantidad: quantity }])
+
+    const data = {
+      clienteId: user.id,
+      detalles: [
+        {
+          productoId: product.id,
+          cantidad: quantity,
+        },
+      ],
+    }
+
+    setPayload(data)
+  }
+
+  useEffect(() => {
+    if (!loadingPost && responsePost) {
+      alert('Gracias por Tu Compra!')
+      navigate('/perfil')
+    }
+  }, [responsePost, loadingPost])
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen">  
       <div className="container mx-auto px-4 py-8">
         <h1 className="mb-8 text-4xl font-bold text-gray-800">Tienda</h1>
 
@@ -164,7 +236,7 @@ export default function Tienda() {
                               {product.stock < 10 ? `¡Solo ${product.stock} disponibles!` : `${product.stock} en stock`}
                             </p>
                           </div>
-                          <Button size="sm" className="gap-2" disabled={product.stock === 0}>
+                          <Button onClick={() => handleAgregarProducto(product)} size="sm" className="gap-2" disabled={product.stock === 0}>
                             <ShoppingCart className="h-4 w-4" />
                             Agregar
                           </Button>
@@ -178,6 +250,112 @@ export default function Tienda() {
           </main>
         </div>
       </div>
+      {showModal && selectedProduct && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn"
+          role="dialog"
+          aria-modal="true"
+          onClick={closeModal}
+        >
+          <div
+            className="relative w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-2xl transition-all duration-300 animate-scaleIn"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              type="button"
+              className="absolute top-4 right-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-gray-600 shadow-md hover:bg-gray-100 hover:text-gray-900 transition"
+              onClick={closeModal}
+              aria-label="Cerrar"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="grid md:grid-cols-2">
+              {/* Imagen */}
+              <div className="bg-gradient-to-br from-orange-50 via-rose-50 to-pink-100 p-8 flex items-center justify-center">
+                <div className="relative aspect-square w-full max-w-sm rounded-2xl bg-white/70 shadow-inner ring-1 ring-gray-200 flex items-center justify-center">
+                  <img
+                    src={selectedProduct.imageUrl ? imagesUrl + selectedProduct.imageUrl : '/placeholder.svg'}
+                    alt={selectedProduct.nombre}
+                    className="max-h-[320px] object-contain transition-transform duration-300 hover:scale-105"
+                  />
+                </div>
+              </div>
+
+              {/* Info */}
+              <div className="p-8 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-start justify-between mb-3">
+                    <h3 className="text-3xl font-bold text-gray-900 leading-tight">
+                      {selectedProduct.nombre}
+                    </h3>
+                    <span
+                      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ${
+                        selectedProduct.stock < 10
+                          ? 'bg-red-50 text-red-700 ring-red-200'
+                          : 'bg-emerald-50 text-emerald-700 ring-emerald-200'
+                      }`}
+                    >
+                      {selectedProduct.stock < 10
+                        ? `Quedan ${selectedProduct.stock}`
+                        : 'En stock'}
+                    </span>
+                  </div>
+
+                  <p className="text-gray-600 text-sm leading-relaxed mb-6">
+                    {selectedProduct.descripcion}
+                  </p>
+
+                  <div className="space-y-1">
+                    <span className="block text-xs uppercase tracking-wide text-gray-500">
+                      Precio
+                    </span>
+                    <span className="text-4xl font-extrabold bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent">
+                      ${selectedProduct.precio}
+                    </span>
+                  </div>
+                  {/* Cantidad */}
+                  <div className="mt-6">
+                    <label htmlFor="cantidad" className="block text-xs uppercase tracking-wide text-gray-500 mb-1">
+                      Cantidad
+                    </label>
+                    <select
+                      id="cantidad"
+                      aria-label="Cantidad"
+                      className="w-full md:w-40 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-400 disabled:opacity-60"
+                      value={quantity}
+                      onChange={(e) => setQuantity(Number(e.target.value))}
+                      disabled={selectedProduct.stock === 0}
+                    >
+                      {Array.from({ length: Math.max(0, Math.min(selectedProduct.stock ?? 0, 10)) }, (_, i) => i + 1).map((q) => (
+                        <option key={q} value={q}>{q}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="mt-8 flex gap-4">
+                  <Button
+                    variant="outline"
+                    className="flex-1 border-gray-300 hover:bg-gray-50 text-gray-700 font-medium rounded-xl"
+                    onClick={closeModal}
+                  >
+                    Cerrar
+                  </Button>
+                  <Button onClick={() => handleComprar(selectedProduct)}
+                    className="flex-1 bg-gradient-to-r from-orange-500 to-pink-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:from-orange-600 hover:to-pink-600 transition disabled:opacity-60 disabled:shadow-none"
+                    disabled={selectedProduct.stock === 0}
+                  >
+                    Comprar Ahora!
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
