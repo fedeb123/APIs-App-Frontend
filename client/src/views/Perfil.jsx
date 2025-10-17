@@ -188,7 +188,7 @@ export default function Perfil() {
             }`}
           >
             <ShoppingBag className="w-5 h-5" />
-            Mis Pedidos
+            Mis Pedidos 
           </button>
         </div>
 
@@ -397,12 +397,14 @@ export default function Perfil() {
 
                   <div className="border-t pt-4 mb-4">
                     <h4 className="font-semibold text-gray-900 mb-2">Artículos:</h4>
-                    {pedido.detalles.map((detalle, index) => (
-                      <div key={index} className="flex justify-between text-sm text-gray-700 mb-1">
+                    {pedido.detalles && pedido.detalles.map((detalle) => (
+                      <div key={detalle.id} className="flex justify-between text-sm text-gray-700 mb-1">
                         <span>
-                          {detalle.producto} x{detalle.cantidad}
+                          {detalle.nombreProducto} x{detalle.cantidad}
                         </span>
-                        <span>${(detalle.precio * detalle.cantidad).toFixed(2)}</span>
+                        <span>
+                          ${detalle.precioSubtotal.toFixed(2)}
+                        </span>
                       </div>
                     ))}
                   </div>

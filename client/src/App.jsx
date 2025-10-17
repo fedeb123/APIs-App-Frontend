@@ -7,6 +7,7 @@ import Login from "./views/Login"
 import Register from "./views/Register"
 import Perfil from "./views/Perfil"
 import Admin from "./views/Admin"
+import Pedidos from "./views/Pedidos"
 import { Header } from "./components/Header"
 
 
@@ -24,6 +25,7 @@ export default function App() {
           <Route path="/register" element={<Register/>} />
           <Route path="/perfil" element={<Perfil/>} />
           <Route path="/admin" element={<Admin/>} />
+          <Route path="/pedidos" element={<Pedidos/>} />
         </Routes>
       </main>
     </>

@@ -8,6 +8,7 @@ import useFetch from "../hooks/useFetch"
 const estadoInicialForm = {
     nombre: '',
     apellido: '',
+    direccion: '',
     email: '',
     password: '',
     confirmarPassword: '',
@@ -54,11 +55,11 @@ const Register=()=>{
         const data = {
             nombre: form.nombre,
             apellido: form.apellido,
+            direccion: form.direccion,
             telefono: form.telefono,
             email: form.email,
             password: form.password,
-            direccion: null,
-            rolId: 1            
+            rolId: 1
         }
 
         setPayload(data)
@@ -107,6 +108,14 @@ const Register=()=>{
                         type="text"
                         placeholder="Apellido"
                         value={form.apellido}
+                        onChange={handleChange}
+                        required
+                        />
+                        <Input
+                        name="direccion"
+                        type="text"
+                        placeholder="Direccion"
+                        value={form.direccion}
                         onChange={handleChange}
                         required
                         />
