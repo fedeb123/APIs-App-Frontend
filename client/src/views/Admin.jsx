@@ -1,83 +1,24 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card } from "../components/ui/Card"
 import { Button } from "../components/ui/Button"
 import { Input } from "../components/ui/Input"
 import { Pencil, Trash2, Plus, Package, Tag, ShoppingBag, X } from "lucide-react"
+import useFetch from "../hooks/useFetch"
+
+const imagesUrl  = import.meta.env.VITE_APP_API_IMAGES_URL
 
 export default function Admin() {
-  const [activeTab, setActiveTab] = useState("categorias")
+  const [activeTab, setActiveTab] = useState("categories")
 
-  // Placeholder data for categories
-  const [categorias, setCategorias] = useState([
-    { id: 1, nombre: "Electrónica", descripcion: "Dispositivos y gadgets" },
-    { id: 2, nombre: "Ropa", descripcion: "Moda y accesorios" },
-    { id: 3, nombre: "Hogar", descripcion: "Artículos para el hogar" },
-  ])
+  const [categories, setCategories] = useState([])
+  const [products, setProducts] = useState([])
+  const [pedidos, setPedidos] = useState([])
 
-  // Placeholder data for products
-  const [productos, setProductos] = useState([
-    {
-      id: 1,
-      nombre: "Laptop HP",
-      descripcion: "Laptop de alto rendimiento",
-      precio: 899.99,
-      stock: 15,
-      categoria: "Electrónica",
-      imagen: "/modern-laptop-workspace.png",
-    },
-    {
-      id: 2,
-      nombre: "Camiseta Nike",
-      descripcion: "Camiseta deportiva",
-      precio: 29.99,
-      stock: 50,
-      categoria: "Ropa",
-      imagen: "/plain-white-tshirt.png",
-    },
-    {
-      id: 3,
-      nombre: "Lámpara LED",
-      descripcion: "Lámpara de escritorio",
-      precio: 45.99,
-      stock: 8,
-      categoria: "Hogar",
-      imagen: "/vintage-desk-lamp.png",
-    },
-  ])
+  const [token, setToken] = useState(localStorage.getItem('jwtToken'))
 
-  // Placeholder data for orders
-  const [pedidos, setPedidos] = useState([
-    {
-      id: 1,
-      cliente: "Juan Pérez",
-      email: "juan@example.com",
-      fecha: "2024-01-15",
-      total: 929.98,
-      estado: "pendiente",
-      items: [
-        { producto: "Laptop HP", cantidad: 1, precio: 899.99 },
-        { producto: "Camiseta Nike", cantidad: 1, precio: 29.99 },
-      ],
-    },
-    {
-      id: 2,
-      cliente: "María García",
-      email: "maria@example.com",
-      fecha: "2024-01-14",
-      total: 45.99,
-      estado: "completado",
-      items: [{ producto: "Lámpara LED", cantidad: 1, precio: 45.99 }],
-    },
-    {
-      id: 3,
-      cliente: "Carlos López",
-      email: "carlos@example.com",
-      fecha: "2024-01-13",
-      total: 59.98,
-      estado: "enviado",
-      items: [{ producto: "Camiseta Nike", cantidad: 2, precio: 29.99 }],
-    },
-  ])
+  const { response: productsContent, loading: loadingProducts, error: errorProducts } = useFetch('productos', 'GET')
+  const { response: categoriesContent, loading: loadingCategories, error: errorCategories } = useFetch('categorias', 'GET')
+  const { response: pedidosContent, loading: loadingPedidos, error: errorPedidos } = useFetch('pedidos', 'GET', null, token)
 
   // Modal states
   const [showCategoriaModal, setShowCategoriaModal] = useState(false)
@@ -99,9 +40,9 @@ export default function Admin() {
   // Category CRUD functions
   const handleCreateCategoria = () => {
     if (editingCategoria) {
-      setCategorias(categorias.map((c) => (c.id === editingCategoria.id ? { ...categoriaForm, id: c.id } : c)))
+      setCategorias(categories.map((c) => (c.id === editingCategoria.id ? { ...categoriaForm, id: c.id } : c)))
     } else {
-      setCategorias([...categorias, { ...categoriaForm, id: Date.now() }])
+      setCategorias([...categories, { ...categoriaForm, id: Date.now() }])
     }
     setShowCategoriaModal(false)
     setCategoriaForm({ nombre: "", descripcion: "" })
@@ -115,15 +56,15 @@ export default function Admin() {
   }
 
   const handleDeleteCategoria = (id) => {
-    setCategorias(categorias.filter((c) => c.id !== id))
+    setCategorias(categories.filter((c) => c.id !== id))
   }
 
   // Product CRUD functions
   const handleCreateProducto = () => {
     if (editingProducto) {
-      setProductos(productos.map((p) => (p.id === editingProducto.id ? { ...productoForm, id: p.id } : p)))
+      setProductos(products.map((p) => (p.id === editingProducto.id ? { ...productoForm, id: p.id } : p)))
     } else {
-      setProductos([...productos, { ...productoForm, id: Date.now() }])
+      setProductos([...products, { ...productoForm, id: Date.now() }])
     }
     setShowProductoModal(false)
     setProductoForm({ nombre: "", descripcion: "", precio: "", stock: "", categoria: "", imagen: "" })
@@ -137,7 +78,7 @@ export default function Admin() {
   }
 
   const handleDeleteProducto = (id) => {
-    setProductos(productos.filter((p) => p.id !== id))
+    setProductos(products.filter((p) => p.id !== id))
   }
 
   // Order management functions
@@ -147,18 +88,41 @@ export default function Admin() {
 
   const getEstadoColor = (estado) => {
     switch (estado) {
-      case "pendiente":
+      case "PENDIENTE":
         return "bg-yellow-100 text-yellow-800"
-      case "enviado":
-        return "bg-blue-100 text-blue-800"
-      case "completado":
+      case "CONFIRMADO":
         return "bg-green-100 text-green-800"
-      case "cancelado":
-        return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
   }
+
+  useEffect(() => {
+    setProducts(productsContent?.content ?? [])
+  }, [productsContent])
+
+  useEffect(() => {
+    setCategories(categoriesContent?.content ?? [])
+  }, [categoriesContent])
+
+  useEffect(() => {
+    setPedidos(pedidosContent?.content ?? [])
+  }, [pedidosContent])
+
+  useEffect(() => {
+    if (errorProducts) {
+      console.error(JSON.stringify(errorProducts))
+    }
+
+    if (errorCategories) {
+      console.error(JSON.stringify(errorCategories))
+    }
+
+    if (errorPedidos) {
+      console.error(JSON.stringify(errorPedidos))
+    }
+
+  }, [errorProducts, errorCategories, errorPedidos])
 
   return (
     <div className="min-h-screen py-8">
@@ -168,9 +132,9 @@ export default function Admin() {
         {/* Tabs */}
         <div className="flex gap-4 mb-8 border-b border-gray-200">
           <button
-            onClick={() => setActiveTab("categorias")}
+            onClick={() => setActiveTab("categories")}
             className={`flex items-center gap-2 px-6 py-3 font-medium transition-colors ${
-              activeTab === "categorias"
+              activeTab === "categories"
                 ? "text-orange-600 border-b-2 border-orange-600"
                 : "text-gray-600 hover:text-gray-900"
             }`}
@@ -179,9 +143,9 @@ export default function Admin() {
             Categorías
           </button>
           <button
-            onClick={() => setActiveTab("productos")}
+            onClick={() => setActiveTab("products")}
             className={`flex items-center gap-2 px-6 py-3 font-medium transition-colors ${
-              activeTab === "productos"
+              activeTab === "products"
                 ? "text-orange-600 border-b-2 border-orange-600"
                 : "text-gray-600 hover:text-gray-900"
             }`}
@@ -203,7 +167,7 @@ export default function Admin() {
         </div>
 
         {/* Categories Tab */}
-        {activeTab === "categorias" && (
+        {activeTab === "categories" && (
           <div>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900">Gestión de Categorías</h2>
@@ -220,7 +184,7 @@ export default function Admin() {
             </div>
 
             <div className="grid gap-4">
-              {categorias.map((categoria) => (
+              {categories.map((categoria) => (
                 <Card key={categoria.id} className="p-6">
                   <div className="flex justify-between items-start">
                     <div>
@@ -248,7 +212,7 @@ export default function Admin() {
         )}
 
         {/* Products Tab */}
-        {activeTab === "productos" && (
+        {activeTab === "products" && (
           <div>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900">Gestión de Productos</h2>
@@ -265,11 +229,11 @@ export default function Admin() {
             </div>
 
             <div className="grid gap-4">
-              {productos.map((producto) => (
+              {products.map((producto) => (
                 <Card key={producto.id} className="p-6">
                   <div className="flex gap-6">
                     <img
-                      src={producto.imagen || "/placeholder.svg"}
+                      src={producto.imageUrl ? imagesUrl + producto.imageUrl : '/placeholder.svg'}
                       alt={producto.nombre}
                       className="w-24 h-24 object-cover rounded-lg"
                     />
@@ -325,7 +289,7 @@ export default function Admin() {
                       <p className="text-sm text-gray-500">Fecha: {pedido.fecha}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold text-orange-600">${pedido.total.toFixed(2)}</p>
+                      <p className="text-2xl font-bold text-orange-600">${pedido.precioTotal.toFixed(2)}</p>
                       <span
                         className={`inline-block px-3 py-1 rounded-full text-sm font-medium mt-2 ${getEstadoColor(pedido.estado)}`}
                       >
@@ -336,7 +300,7 @@ export default function Admin() {
 
                   <div className="border-t pt-4 mb-4">
                     <h4 className="font-semibold text-gray-900 mb-2">Artículos:</h4>
-                    {pedido.items.map((item, index) => (
+                    {pedido.detalles.map((item, index) => (
                       <div key={index} className="flex justify-between text-sm text-gray-700 mb-1">
                         <span>
                           {item.producto} x{item.cantidad}
@@ -350,35 +314,18 @@ export default function Admin() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleUpdateEstadoPedido(pedido.id, "pendiente")}
-                      disabled={pedido.estado === "pendiente"}
+                      onClick={() => handleUpdateEstadoPedido(pedido.id, "PENDIENTE")}
+                      disabled={pedido.estado === "PENDIENTE"}
                     >
-                      Pendiente
+                      PENDIENTE
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleUpdateEstadoPedido(pedido.id, "enviado")}
-                      disabled={pedido.estado === "enviado"}
+                      onClick={() => handleUpdateEstadoPedido(pedido.id, "CONFIRMADO")}
+                      disabled={pedido.estado === "CONFIRMADO"}
                     >
-                      Enviado
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleUpdateEstadoPedido(pedido.id, "completado")}
-                      disabled={pedido.estado === "completado"}
-                    >
-                      Completado
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleUpdateEstadoPedido(pedido.id, "cancelado")}
-                      disabled={pedido.estado === "cancelado"}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      Cancelado
+                      CONFIRMADO
                     </Button>
                   </div>
                 </Card>
@@ -499,7 +446,7 @@ export default function Admin() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                 >
                   <option value="">Seleccionar categoría</option>
-                  {categorias.map((cat) => (
+                  {categories.map((cat) => (
                     <option key={cat.id} value={cat.nombre}>
                       {cat.nombre}
                     </option>
