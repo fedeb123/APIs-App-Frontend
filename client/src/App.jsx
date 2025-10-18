@@ -9,6 +9,7 @@ import Perfil from "./views/Perfil"
 import Admin from "./views/Admin"
 import Pedidos from "./views/Pedidos"
 import { Header } from "./components/Header"
+import { AdminRoute } from "./components/AdminRoute.jsx"
 
 
 export default function App() {
@@ -24,8 +25,10 @@ export default function App() {
           <Route path="/login" element={<Login/>} />
           <Route path="/register" element={<Register/>} />
           <Route path="/perfil" element={<Perfil/>} />
-          <Route path="/admin" element={<Admin/>} />
-          <Route path="/pedidos" element={<Pedidos/>} />
+          <Route element={<AdminRoute />}>
+          <Route path="/admin" element={<Admin />} />
+        </Route>
+          <Route path="/pedidos" element={<Pedidos/>} />  
         </Routes>
       </main>
     </>
