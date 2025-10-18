@@ -102,7 +102,7 @@ export default function Tienda() {
   //handleComprar seria luego handleAgregarAlCarrito
   const handleComprar = (product) => {
     if (!user || !token) {
-      alert("Tienes que estar logueado para comprar, obviamente")
+      alert("Tienes que estar logueado para comprar")
       navigate('/login')
       return
     }
@@ -124,7 +124,7 @@ export default function Tienda() {
   useEffect(() => {
     if (!loadingPost && responsePost) {
       alert('Gracias por Tu Compra!')
-      navigate('/perfil')
+      navigate('/pedidos')
     }
   }, [responsePost, loadingPost])
 
