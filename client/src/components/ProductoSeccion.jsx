@@ -8,7 +8,7 @@ const imagesUrl  = import.meta.env.VITE_APP_API_IMAGES_URL
 export function ProductoSeccion() {
 
 const [products, setProducts] = useState([])
-const { response: productsContent, loading, error } = useFetch('productos/validos', 'GET')
+const { response: productsContent, loading, error } = useFetch('productos/stockeados', 'GET')
 
 
 useEffect(() => {
