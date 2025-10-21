@@ -60,7 +60,6 @@ const Register=()=>{
         const data = {
             nombre: form.nombre,
             apellido: form.apellido,
-            direccion: form.direccion,
             telefono: form.telefono,
             email: form.email,
             password: form.password,
@@ -119,14 +118,6 @@ const Register=()=>{
                         type="text"
                         placeholder="Apellido"
                         value={form.apellido}
-                        onChange={handleChange}
-                        required
-                        />
-                        <Input
-                        name="direccion"
-                        type="text"
-                        placeholder="Direccion"
-                        value={form.direccion}
                         onChange={handleChange}
                         required
                         />
