@@ -82,30 +82,67 @@ export default function Admin() {
   };
 
   // --- FUNCIONES CRUD PARA PRODUCTOS ---
-  const handleSaveProducto = () => {
-    const payload = {
-      nombre: productoForm.nombre,
-      descripcion: productoForm.descripcion,
-      precio: parseFloat(productoForm.precio),
-      stock: parseInt(productoForm.stock, 10),
-      categoriaId: parseInt(productoForm.categoriaId, 10)
-    };
-    if (editingProducto) {
-      setApiConfig({ location: `productos/${editingProducto.id}`, method: 'PUT', payload });
-    } else {
-      setApiConfig({ location: 'productos', method: 'POST', payload });
+const handleSaveProducto = async () => {
+  try {
+    const formData = new FormData();
+    formData.append("nombre", productoForm.nombre);
+    formData.append("descripcion", productoForm.descripcion);
+    formData.append("precio", productoForm.precio ? Number(productoForm.precio) : 0);
+    formData.append("stock", productoForm.stock ? Number(productoForm.stock) : 0);
+    const categoriaId = productoForm.categoriaId ? Number(productoForm.categoriaId) : null;
+    formData.append("categoriaId", categoriaId);
+
+    if (productoForm.imagenFile) {
+      formData.append("imagen", productoForm.imagenFile);
     }
-  };
+
+    const url = editingProducto
+      ? `${import.meta.env.VITE_APP_API_URL}/productos/${editingProducto.id}`
+      : `${import.meta.env.VITE_APP_API_URL}/productos`;
+    const method = editingProducto ? "PUT" : "POST";
+
+    const response = await fetch(url, {
+      method,
+      headers: {
+        Authorization: `Bearer ${token}` // solo Authorization, no Content-Type
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(errorData?.message || `Error ${response.status}`);
+    }
+
+    const data = await response.json();
+    alert(editingProducto ? "Producto actualizado con éxito!" : "Producto creado con éxito!");
+    setRefresh(prev => !prev);
+    setShowProductoModal(false);
+    setProductoForm({ nombre: "", descripcion: "", precio: "", stock: "", categoriaId: "", imagenFile: null });
+    setEditingProducto(null);
+
+  } catch (err) {
+    console.error(err);
+    alert(`Error al guardar el producto: ${err.message}`);
+  }
+};
+
 
   const handleEditProducto = (producto) => {
+    if (!producto || !producto.id) {
+      return alert("Producto inválido: no se puede editar.");
+    }
+
+    // Asegurarse que todos los campos estén definidos
     setEditingProducto(producto);
     setProductoForm({
-        nombre: producto.nombre,
-        descripcion: producto.descripcion,
-        precio: producto.precio,
-        stock: producto.stock,
-        categoriaId: producto.categoriaId
+      nombre: producto.nombre || "",
+      descripcion: producto.descripcion || "",
+      precio: producto.precio != null ? Number(producto.precio) : 0,
+      stock: producto.stock != null ? Number(producto.stock) : 0,
+      categoriaId: producto.categoriaId != null ? Number(producto.categoriaId) : ""
     });
+
     setShowProductoModal(true);
   };
 
@@ -269,41 +306,105 @@ export default function Admin() {
 
       {/* Product Modal */}
       {showProductoModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm animate-fadeIn">
-          <Card className="w-full max-w-md p-6 relative max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => { setShowProductoModal(false); setEditingProducto(null); }} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
-            <h3 className="text-2xl font-bold text-gray-900 mb-6">{editingProducto ? "Editar Producto" : "Nuevo Producto"}</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
-                <Input value={productoForm.nombre} onChange={(e) => setProductoForm({ ...productoForm, nombre: e.target.value })} placeholder="Nombre del producto"/>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
-                <Input value={productoForm.descripcion} onChange={(e) => setProductoForm({ ...productoForm, descripcion: e.target.value })} placeholder="Descripción del producto"/>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Precio</label>
-                <Input type="number" step="0.01" value={productoForm.precio} onChange={(e) => setProductoForm({ ...productoForm, precio: e.target.value })} placeholder="0.00"/>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Stock</label>
-                <Input type="number" value={productoForm.stock} onChange={(e) => setProductoForm({ ...productoForm, stock: e.target.value })} placeholder="0"/>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
-                <select value={productoForm.categoriaId} onChange={(e) => setProductoForm({ ...productoForm, categoriaId: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
-                  <option value="">Seleccionar categoría</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>{cat.nombreCategoria}</option>
-                  ))}
-                </select>
-              </div>
-              <Button onClick={handleSaveProducto} className="w-full">{editingProducto ? "Actualizar" : "Crear"} Producto</Button>
-            </div>
-          </Card>
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm animate-fadeIn">
+    <Card className="w-full max-w-md p-6 relative max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+      <button onClick={() => { setShowProductoModal(false); setEditingProducto(null); }} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+        <X className="w-5 h-5" />
+      </button>
+      <h3 className="text-2xl font-bold text-gray-900 mb-6">{editingProducto ? "Editar Producto" : "Nuevo Producto"}</h3>
+      <div className="space-y-4">
+
+        {/* Nombre */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
+          <Input 
+            value={productoForm.nombre} 
+            onChange={(e) => setProductoForm({ ...productoForm, nombre: e.target.value })} 
+            placeholder="Nombre del producto"
+          />
         </div>
-      )}
+
+        {/* Descripción */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+          <Input 
+            value={productoForm.descripcion} 
+            onChange={(e) => setProductoForm({ ...productoForm, descripcion: e.target.value })} 
+            placeholder="Descripción del producto"
+          />
+        </div>
+
+        {/* Precio */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Precio</label>
+          <Input 
+            type="number" 
+            step="0.01" 
+            value={productoForm.precio} 
+            onChange={(e) => setProductoForm({ ...productoForm, precio: e.target.value })} 
+            placeholder="0.00"
+          />
+        </div>
+
+        {/* Stock */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Stock</label>
+          <Input 
+            type="number" 
+            value={productoForm.stock} 
+            onChange={(e) => setProductoForm({ ...productoForm, stock: e.target.value })} 
+            placeholder="0"
+          />
+        </div>
+
+        {/* Imagen */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Adjuntar imagen</label>
+          <Input
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files[0];
+              if (file) setProductoForm({ ...productoForm, imagenFile: file });
+            }}
+          />
+        </div>
+
+        {/* Categoría */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
+          <select 
+            value={productoForm.categoriaId} 
+            onChange={(e) => setProductoForm({ ...productoForm, categoriaId: e.target.value })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+          >
+            <option value="">Seleccionar categoría</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>{cat.nombreCategoria}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Botón Guardar */}
+        <Button 
+          onClick={() => {
+            // Validaciones antes de enviar
+            if (!productoForm.nombre.trim()) return alert("El nombre es obligatorio");
+            if (!productoForm.descripcion.trim()) return alert("La descripción es obligatoria");
+            if (!productoForm.precio || isNaN(Number(productoForm.precio))) return alert("El precio es inválido");
+            if (!productoForm.stock || isNaN(Number(productoForm.stock))) return alert("El stock es inválido");
+            if (!productoForm.categoriaId) return alert("Debe seleccionar una categoría");
+
+            handleSaveProducto();
+          }} 
+          className="w-full"
+        >
+          {editingProducto ? "Actualizar" : "Crear"} Producto
+        </Button>
+      </div>
+    </Card>
+  </div>
+)}
     </div>
   );
 }
