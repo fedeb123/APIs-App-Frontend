@@ -15,7 +15,6 @@ export default function Contacto() {
     e.preventDefault()
     console.log("Formulario enviado:", formData)
     alert('Su mensaje ha sido enviado!')
-    // logica del mensaje enviado aca pls
   }
 
   const handleChange = (e) => {
