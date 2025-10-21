@@ -15,7 +15,6 @@ export default function Contacto() {
     e.preventDefault()
     console.log("Formulario enviado:", formData)
     alert('Su mensaje ha sido enviado!')
-    // logica del mensaje enviado aca pls
   }
 
   const handleChange = (e) => {
@@ -59,7 +58,7 @@ export default function Contacto() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground">Teléfono</h3>
-                  <p className="text-sm text-muted-foreground">+54 9 11 2245-4120</p>
+                  <p className="text-sm text-muted-foreground">+54 9 11 1234-5678</p>
                 </div>
               </div>
 
@@ -79,11 +78,11 @@ export default function Contacto() {
                 <div className="space-y-2 text-sm text-muted-foreground">
                   <div className="flex justify-between">
                     <span>Lunes - Viernes:</span>
-                    <span className="font-medium">9:00 - 10:00</span>
+                    <span className="font-medium">9:00 - 16:00</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Sábado:</span>
-                    <span className="font-medium">10:00 - 10:15</span>
+                    <span className="font-medium">10:00 - 14:15</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Domingo:</span>

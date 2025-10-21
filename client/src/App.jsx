@@ -6,9 +6,10 @@ import Tienda from "./views/Tienda"
 import Login from "./views/Login"
 import Register from "./views/Register"
 import Perfil from "./views/Perfil"
-import Pedidos from "./views/Pedidos"
 import Admin from "./views/Admin"
+import Pedidos from "./views/Pedidos"
 import { Header } from "./components/Header"
+import { AdminRoute } from "./components/AdminRoute.jsx"
 
 
 export default function App() {
@@ -24,8 +25,10 @@ export default function App() {
           <Route path="/login" element={<Login/>} />
           <Route path="/register" element={<Register/>} />
           <Route path="/perfil" element={<Perfil/>} />
-          <Route path="/pedidos" element={<Pedidos/>} />
-          <Route path="/admin" element={<Admin/>} />
+          <Route element={<AdminRoute />}>
+          <Route path="/admin" element={<Admin />} />
+        </Route>
+          <Route path="/pedidos" element={<Pedidos/>} />  
         </Routes>
       </main>
     </>

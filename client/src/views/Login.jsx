@@ -1,24 +1,56 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useNavigate , Link} from "react-router-dom"
 import { Button } from "../components/ui/Button"
 import { Input } from "../components/ui/Input"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
+import useFetch from "../hooks/useFetch"
+import useUser from "../hooks/useUser"
+import { useAuth } from "../context/AuthContext"
 
 export default function Login() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const navigate = useNavigate()
+  const [payload, setPayload] = useState(null)
+  const [token, setToken] = useState(null)
+
+  const { user: profile, loading: loadingProfile, error: errorProfile } = useUser(token)
+
+  const { login } = useAuth() 
+
+  const { response, loading, error } = useFetch('v1/auth/authenticate', 'POST', payload) 
+
+  let navigate = useNavigate()
 
   const handleSubmit = (e) => {
     e.preventDefault()
-
-    // Simulación de login (en real iría API)
-    const fakeUser = { name: "Nicolas", email }
-    localStorage.setItem("user", JSON.stringify(fakeUser))
-
-    navigate("/") // vuelve al inicio
-    window.location.reload() // refresca Header
+    
+    const data = {
+      email: email,
+      password: password,
+    }
+    setPayload(data)
   }
+
+  useEffect(() => {
+    if (response) {
+        localStorage.setItem('jwtToken', response.accessToken)
+        setToken(response.accessToken)
+    }
+  }, [response])
+
+  useEffect(() => {
+    if (profile && !loadingProfile && token) {
+      login(profile, token)
+      navigate('/tienda')
+    }
+  }, [profile, loadingProfile, token])
+
+  useEffect(() => {
+    if (error) {
+      console.error(JSON.stringify(error))
+      alert(`Ha ocurrido un error en el logueo: ${JSON.stringify(error)}`)
+    }
+  }, [error])
 
   return (
     <div className="flex h-screen items-center justify-center bg-background">
@@ -31,6 +63,7 @@ export default function Login() {
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <Input
+              name="email"
               type="email"
               placeholder="Correo electrónico"
               value={email}
@@ -38,13 +71,14 @@ export default function Login() {
               required
             />
             <Input
+              name="email"
               type="password"
               placeholder="Contraseña"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
-            <Button type="submit" className="w-full">
+            <Button disabled={loadingProfile} type="submit" className="w-full">
               Entrar
             </Button>
           </form>
