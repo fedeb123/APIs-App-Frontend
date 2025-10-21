@@ -106,6 +106,13 @@ export default function Tienda() {
       navigate('/login')
       return
     }
+
+    if (!user.direccion) {
+      alert('Carga tu direccion antes de comprar')
+      navigate('/perfil')
+      return
+    }
+
     setProductosComprados([...productosComprados, { ...product, cantidad: quantity }])
 
     const data = {
