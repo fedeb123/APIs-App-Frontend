@@ -29,7 +29,7 @@ export default function Admin() {
   const { response: pedidosContent } = useFetch('pedidos', 'GET', null, token, refresh);
 
   // Hook para ENVIAR datos (POST, PUT, DELETE)
-  const { response: apiResponse, error: apiError } = useFetch(apiConfig.location, apiConfig.method, apiConfig.payload, token);
+  const { response: apiResponse, loading: apiLoading, error: apiError } = useFetch(apiConfig.location, apiConfig.method, apiConfig.payload, token);
 
   // Estados para los modales y formularios
   const [showCategoriaModal, setShowCategoriaModal] = useState(false);
@@ -43,7 +43,7 @@ export default function Admin() {
 
   // Efecto para manejar la respuesta de las operaciones CUD
   useEffect(() => {
-    if (apiResponse) {
+    if (apiResponse && !apiLoading) {
       // Éxito: si el server manda texto, mostrámelo; si es objeto, usá .message o un genérico
       const successMsg =
         (typeof apiResponse === "string" && apiResponse) ||
@@ -57,7 +57,7 @@ export default function Admin() {
       setApiConfig({ location: null, method: null, payload: null });
     }
 
-    if (apiError) {
+    if (apiError && !apiLoading) {
       console.error("Error completo de la API:", apiError);
       // Error: prioriza body string, luego body.message, luego statusText, y por último el código
       const errorMsg =
@@ -69,7 +69,7 @@ export default function Admin() {
       alert(`Error al realizar la operación: ${errorMsg}`);
       setApiConfig({ location: null, method: null, payload: null });
     }
-  }, [apiResponse, apiError]);
+  }, [apiResponse, apiLoading, apiError]);
 
   // Efectos para actualizar el estado cuando los datos se cargan
   useEffect(() => { setProducts(productsContent?.content ?? []) }, [productsContent]);
@@ -251,10 +251,10 @@ const handleSaveProducto = async () => {
         )}
 
         {/* Products Tab Content */}
-        {activeTab === "products" && (
+          {activeTab === "products" && (
             <div>
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Gestión de Productos Activos</h2>
+                <h2 className="text-2xl font-bold text-gray-900">Gestión de Productos</h2>
                 <Button onClick={() => { setEditingProducto(null); setProductoForm({ nombre: "", descripcion: "", precio: "", stock: "", categoriaId: "" }); setShowProductoModal(true);}}>
                 <Plus className="w-4 h-4 mr-2" /> Nuevo Producto
                 </Button>
@@ -272,9 +272,10 @@ const handleSaveProducto = async () => {
                         <span className="text-gray-700"><strong>Stock:</strong> {producto.stock}</span>
                         </div>
                     </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => handleReactivarProducto(producto.id)}>Reactivar</Button>
-          </div>
+                    <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => handleEditProducto(producto)}><Pencil className="w-4 h-4" /></Button>
+                        <Button variant="outline" size="sm" onClick={() => handleDeleteProducto(producto.id)} className="text-red-600 hover:text-red-700"><Trash2 className="w-4 h-4" /></Button>
+                    </div>
                     </div>
                 </Card>
                 ))}
@@ -300,8 +301,7 @@ const handleSaveProducto = async () => {
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => handleEditProducto(producto)}><Pencil className="w-4 h-4" /></Button>
-                        <Button variant="outline" size="sm" onClick={() => handleDeleteProducto(producto.id)} className="text-red-600 hover:text-red-700"><Trash2 className="w-4 h-4" /></Button>
+                        <Button variant="outline" size="sm" onClick={() => handleReactivarProducto(producto)}><Pencil className="w-4 h-4" /></Button>
                     </div>
                     </div>
                 </Card>
