@@ -19,7 +19,7 @@ export default function Admin() {
   const [refresh, setRefresh] = useState(false);
 
   // Estados para manejar las llamadas a la API (Crear, Actualizar, Borrar)
-  const [apiConfig, setApiConfig] = useState({ location: null, method: null, payload: null });
+  const [apiConfig, setApiConfig] = useState({ location: null, method: null });
 
   // Hooks para OBTENER datos (se refrescan cuando 'refresh' cambia)
   const { response: productsContent } = useFetch('productos', 'GET', null, token, refresh);
@@ -43,33 +43,33 @@ export default function Admin() {
 
   // Efecto para manejar la respuesta de las operaciones CUD
   useEffect(() => {
-    if (apiResponse && !apiLoading) {
-      // Éxito: si el server manda texto, mostrámelo; si es objeto, usá .message o un genérico
-      const successMsg =
-        (typeof apiResponse === "string" && apiResponse) ||
-        apiResponse?.message ||
-        "Operación realizada con éxito!";
+    if (!apiLoading) {
+      if (apiResponse) {
+        const successMsg =
+          (typeof apiResponse === "string" && apiResponse) ||
+          apiResponse?.message ||
+          "Operación realizada con éxito!";
 
-      alert(successMsg);
-      setRefresh(prev => !prev);
-      setShowCategoriaModal(false);
-      setShowProductoModal(false);
-      setApiConfig({ location: null, method: null, payload: null });
+        alert(successMsg);
+        setRefresh(prev => !prev);
+        setShowCategoriaModal(false);
+        setShowProductoModal(false);
+        // setApiConfig({ location: null, method: null, payload: null });
+      }
+
+      if (apiError) {
+        console.error("Error completo de la API:", apiError);
+        const errorMsg =
+          (typeof apiError.body === "string" && apiError.body) ||
+          apiError.body?.message ||
+          apiError.statusText ||
+          `Error ${apiError.status}`;
+
+        alert(`Error al realizar la operación: ${errorMsg}`);
+        // setApiConfig({ location: null, method: null, payload: null });
+      }
     }
-
-    if (apiError && !apiLoading) {
-      console.error("Error completo de la API:", apiError);
-      // Error: prioriza body string, luego body.message, luego statusText, y por último el código
-      const errorMsg =
-        (typeof apiError.body === "string" && apiError.body) ||
-        apiError.body?.message ||
-        apiError.statusText ||
-        `Error ${apiError.status}`;
-
-      alert(`Error al realizar la operación: ${errorMsg}`);
-      setApiConfig({ location: null, method: null, payload: null });
-    }
-  }, [apiResponse, apiLoading, apiError]);
+  }, [apiLoading]);
 
   // Efectos para actualizar el estado cuando los datos se cargan
   useEffect(() => { setProducts(productsContent?.content ?? []) }, [productsContent]);
@@ -145,7 +145,6 @@ const handleSaveProducto = async () => {
     alert(`Error al guardar el producto: ${err.message}`);
   }
 };
-
 
   const handleEditProducto = (producto) => {
     if (!producto || !producto.id) {
