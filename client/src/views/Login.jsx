@@ -4,18 +4,14 @@ import { Button } from "../components/ui/Button"
 import { Input } from "../components/ui/Input"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
 import useFetch from "../hooks/useFetch"
-import useUser from "../hooks/useUser"
-import { useAuth } from "../context/AuthContext"
+import useAuth from "../hooks/useAuth"
 
 export default function Login() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [payload, setPayload] = useState(null)
-  const [token, setToken] = useState(null)
 
-  const { user: profile, loading: loadingProfile, error: errorProfile } = useUser(token)
-
-  const { login } = useAuth() 
+  const { user, loadingProfile, login } = useAuth(); 
 
   const { response, loading, error } = useFetch('v1/auth/authenticate', 'POST', payload) 
 
@@ -33,17 +29,15 @@ export default function Login() {
 
   useEffect(() => {
     if (response) {
-        localStorage.setItem('jwtToken', response.accessToken)
-        setToken(response.accessToken)
+        login(response.accessToken)
     }
-  }, [response])
+  }, [response])  
 
   useEffect(() => {
-    if (profile && !loadingProfile && token) {
-      login(profile, token)
+    if (user && !loadingProfile) {
       navigate('/tienda')
     }
-  }, [profile, loadingProfile, token])
+  }, [user, loadingProfile])
 
   useEffect(() => {
     if (error) {

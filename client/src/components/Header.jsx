@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { User, ShoppingBag, LogOut, Shield } from "lucide-react";
-import { useAuth } from "../context/AuthContext.jsx";
+import useAuth from "../hooks/useAuth.jsx";
 
 export function Header() {
   const navigate = useNavigate();

@@ -4,6 +4,7 @@ import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { Pencil, Trash2, Plus, Package, Tag, ShoppingBag, X } from "lucide-react";
 import useFetch from "../hooks/useFetch";
+import useAuth from "../hooks/useAuth";
 
 const imagesUrl = import.meta.env.VITE_APP_API_IMAGES_URL;
 
@@ -15,7 +16,7 @@ export default function Admin() {
   const [productosDesc, setProductosDesc] = useState([]);
   const [categoriasDesc, setCategoriasDesc] = useState([]);
   const [pedidos, setPedidos] = useState([]);
-  const [token] = useState(localStorage.getItem('jwtToken'));
+  const { token } = useAuth();
   const [refresh, setRefresh] = useState(false);
 
   // Estados para manejar las llamadas a la API (Crear, Actualizar, Borrar)

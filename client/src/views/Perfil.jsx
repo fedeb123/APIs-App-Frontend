@@ -5,7 +5,7 @@ import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { User, Mail, Lock, Phone } from "lucide-react"; // Importa el ícono del teléfono
 import useFetch from "../hooks/useFetch";
-import useUser from "../hooks/useUser";
+import useAuth from "../hooks/useAuth";
 
 function formReducer(state, action) {
   if (action.type === 'UPDATE_FIELD') {
@@ -16,9 +16,7 @@ function formReducer(state, action) {
 
 export default function Perfil() {
   const navigate = useNavigate();
-  const [token] = useState(localStorage.getItem('jwtToken'));
-  const [refresh, setRefresh] = useState(false);
-  const { user, loading: userLoading } = useUser(token, refresh);
+  const { user, loadingProfile: userLoading, refreshUser, logout, token } = useAuth();
   
   const [isEditing, setIsEditing] = useState(false);
   const [formState, dispatch] = useReducer(formReducer, {});
@@ -37,7 +35,7 @@ export default function Perfil() {
     if (updateResponse) {
       alert("Perfil actualizado con éxito.");
       setIsEditing(false);
-      setRefresh(prev => !prev);
+      refreshUser();
     }
     if (updateError) {
       alert(`Error al actualizar: ${updateError.body?.message || 'Error de servidor'}`);
@@ -70,8 +68,7 @@ export default function Perfil() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("jwtToken");
-    localStorage.removeItem("user");
+    logout();
     navigate("/");
     window.location.reload(); // Para asegurar que el header se actualice
   };
