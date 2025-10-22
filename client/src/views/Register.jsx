@@ -4,8 +4,7 @@ import { Input } from "../components/ui/Input"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
 import { Link, useNavigate } from "react-router-dom"
 import useFetch from "../hooks/useFetch"
-import { useAuth } from "../context/AuthContext"
-import useUser from "../hooks/useUser"
+import useAuth from "../hooks/useAuth"
 
 const estadoInicialForm = {
     nombre: '',
@@ -44,10 +43,8 @@ const Register=()=>{
 
     const[form, dispatch] = useReducer(reducer, estadoInicialForm)
     const [payload, setPayload] = useState(null)
-    const { response, loading, error } = useFetch('v1/auth/register', 'POST', payload)
-    const [token, setToken] = useState(null)
-    const { user: profile, loading: loadingProfile, error: errorProfile } = useUser(token)
-    const { login } = useAuth()
+    const { response, error } = useFetch('v1/auth/register', 'POST', payload)
+    const { user: profile, loadingProfile, login } = useAuth()
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -78,18 +75,16 @@ const Register=()=>{
 
     useEffect(() => {
         if (response) {
-            localStorage.setItem('jwtToken', response.accessToken)
             dispatch({type: 'RESET'})
-            setToken(response.accessToken)
+            login(response.accessToken)
         }
     }, [response])
 
     useEffect(() => {
-        if (profile && !loadingProfile && token) {
-            login(profile, token)
+        if (profile && !loadingProfile) {
             navigate('/tienda')
         }
-    }, [profile, loadingProfile, token])
+    }, [profile, loadingProfile])
 
     const handleChange = (e) => {
         dispatch({type: "ACTUALIZAR_CAMPO", name: e.target.name, value: e.target.value})

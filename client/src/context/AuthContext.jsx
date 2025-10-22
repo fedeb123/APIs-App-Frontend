@@ -1,27 +1,46 @@
 import { createContext, useState, useContext, useEffect } from "react";
+import useFetch from "../hooks/useFetch";
 
-// 1. Crear el Contexto
-const AuthContext = createContext();
+// Crea el Contexto
+export const AuthContext = createContext();
 
-// 2. Crear el Proveedor del Contexto (un componente que envolverá la app)
+// Proveedor del Contexto (envuelve la App se usa desde cualquier lado)
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [refresh, setRefresh] = useState(false)
   const [token, setToken] = useState(localStorage.getItem("jwtToken"));
+  const [usuarioEndpoint, setUsuarioEndpoint] = useState(null)
+  const { response: profile, loading: loadingProfile, error: errorProfile } = useFetch(usuarioEndpoint, 'GET', null, token, refresh)
 
   // Este efecto se ejecuta UNA VEZ cuando la app carga
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
     const storedToken = localStorage.getItem("jwtToken");
-    if (storedUser && storedToken) {
-      setUser(JSON.parse(storedUser));
+    if (storedToken) {
       setToken(storedToken);
     }
   }, []);
 
-  const login = (userData, userToken) => {
-    localStorage.setItem("user", JSON.stringify(userData));
+  useEffect(() => {
+    if (token) {
+      setUsuarioEndpoint('usuarios/usuario')
+    }
+  }, [token])
+
+  useEffect(() => {
+    if (profile && !loadingProfile){
+      localStorage.setItem('user', JSON.stringify(profile))
+      setUser(profile)
+    }
+  }, [loadingProfile, profile])
+
+  useEffect(() => {
+    if (!loadingProfile && errorProfile) {
+      console.error('Error en Autenticacion: ' + JSON.stringify(errorProfile))
+    }
+  }, [loadingProfile, errorProfile])
+
+  const login = (userToken) => {
     localStorage.setItem("jwtToken", userToken);
-    setUser(userData);
     setToken(userToken);
   };
 
@@ -32,14 +51,16 @@ export function AuthProvider({ children }) {
     setToken(null);
   };
 
+  const refreshUser = () => {
+    if (!token) {
+      return
+    }
+    setRefresh(prev => !prev)
+  }
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout }}>
+    <AuthContext.Provider value={{ user, token, loadingProfile, errorProfile, login, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
-}
-
-// 3. Crear un hook personalizado para usar el contexto fácilmente
-export function useAuth() {
-  return useContext(AuthContext);
 }

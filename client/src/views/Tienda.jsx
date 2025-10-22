@@ -5,7 +5,7 @@ import { Card } from "../components/ui/Card"
 import { Button } from "../components/ui/Button"
 import { Search, ShoppingCart, X } from "lucide-react"
 import useFetch from "../hooks/useFetch"
-import useUser from "../hooks/useUser"
+import useAuth from "../hooks/useAuth"
 
 const imagesUrl  = import.meta.env.VITE_APP_API_IMAGES_URL
 
@@ -22,8 +22,7 @@ export default function Tienda() {
   const [quantity, setQuantity] = useState(1)
   const [payload, setPayload] = useState(null)
 
-  const [token, setToken] = useState(localStorage.getItem('jwtToken'))
-  const { user: responseUser, loading } = useUser(token)
+  const { user: responseUser, loadingProfile, token } = useAuth()
 
   const navigate = useNavigate()
 
@@ -66,10 +65,10 @@ export default function Tienda() {
 
 
   useEffect(() => {
-    if (responseUser && !loading) {
+    if (responseUser && !loadingProfile) {
       setUser(responseUser)
     }
-  }, [responseUser, loading])
+  }, [responseUser, loadingProfile])
 
   useEffect(() => {
     if (errorProducts) {
@@ -101,7 +100,7 @@ export default function Tienda() {
 
   //handleComprar seria luego handleAgregarAlCarrito
   const handleComprar = (product) => {
-    if (!user || !token) {
+    if (!user) {
       alert("Tienes que estar logueado para comprar")
       navigate('/login')
       return

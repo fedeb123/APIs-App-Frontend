@@ -4,6 +4,7 @@ import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { X, Clock, ShoppingCart } from "lucide-react";
 import useFetch from "../hooks/useFetch";
+import useAuth from "../hooks/useAuth";
 
 // --- COMPONENTE DEL MODAL DE CONFIRMACIÓN ---
 // (Este componente no necesita cambios, ya es correcto)
@@ -85,7 +86,7 @@ const ConfirmationModal = ({ pedido, onClose, onConfirm }) => {
 
 // --- VISTA PRINCIPAL DE PEDIDOS (CON SECCIONES SEPARADAS) ---
 export default function Pedidos() {
-  const [token] = useState(localStorage.getItem('jwtToken'));
+  const { token } = useAuth();
   const [refresh, setRefresh] = useState(false);
   const [pedidos, setPedidos] = useState([]);
 
