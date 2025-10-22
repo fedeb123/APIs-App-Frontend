@@ -174,13 +174,13 @@ const handleSaveProducto = async () => {
   // --- FUNCIONES PARA REACTIVAR ---
   const handleReactivarCategoria = (id) => {
     if (window.confirm("¿Reactivar esta categoría?")) {
-      setApiConfig({ location: `categorias/reactivar/${id}`, method: 'PUT', payload: {} });
+      setApiConfig({ location: `categorias/descontinuadas/reactivar/${id}`, method: 'PUT', payload: {} });
     }
   };
 
   const handleReactivarProducto = (id) => {
     if (window.confirm("¿Reactivar este producto?")) {
-      setApiConfig({ location: `productos/reactivar/${id}`, method: 'PUT', payload: {} });
+      setApiConfig({ location: `productos/descontinuados/reactivar/${id}`, method: 'PUT', payload: {} });
     }
   };
 
