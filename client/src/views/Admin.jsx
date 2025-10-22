@@ -12,6 +12,8 @@ export default function Admin() {
   const [activeTab, setActiveTab] = useState("categories");
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
+  const [productosDesc, setProductosDesc] = useState([]);
+  const [categoriasDesc, setCategoriasDesc] = useState([]);
   const [pedidos, setPedidos] = useState([]);
   const [token] = useState(localStorage.getItem('jwtToken'));
   const [refresh, setRefresh] = useState(false);
@@ -22,6 +24,8 @@ export default function Admin() {
   // Hooks para OBTENER datos (se refrescan cuando 'refresh' cambia)
   const { response: productsContent } = useFetch('productos', 'GET', null, token, refresh);
   const { response: categoriesContent } = useFetch('categorias', 'GET', null, token, refresh);
+  const { response: productsDiscontContent } = useFetch('productos/descontinuados', 'GET', null, token, refresh);
+  const { response: categoriesDiscontContent } = useFetch('categorias/descontinuadas', 'GET', null, token, refresh);
   const { response: pedidosContent } = useFetch('pedidos', 'GET', null, token, refresh);
 
   // Hook para ENVIAR datos (POST, PUT, DELETE)
@@ -40,16 +44,29 @@ export default function Admin() {
   // Efecto para manejar la respuesta de las operaciones CUD
   useEffect(() => {
     if (apiResponse) {
-      alert("Operación realizada con éxito!");
-      setRefresh(prev => !prev); // Forza la recarga de datos
+      // Éxito: si el server manda texto, mostrámelo; si es objeto, usá .message o un genérico
+      const successMsg =
+        (typeof apiResponse === "string" && apiResponse) ||
+        apiResponse?.message ||
+        "Operación realizada con éxito!";
+
+      alert(successMsg);
+      setRefresh(prev => !prev);
       setShowCategoriaModal(false);
       setShowProductoModal(false);
       setApiConfig({ location: null, method: null, payload: null });
     }
+
     if (apiError) {
       console.error("Error completo de la API:", apiError);
-      const errorMessage = apiError.body?.message || `Error ${apiError.status} sin mensaje claro del servidor.`;
-      alert(`Error al realizar la operación: ${errorMessage}`);
+      // Error: prioriza body string, luego body.message, luego statusText, y por último el código
+      const errorMsg =
+        (typeof apiError.body === "string" && apiError.body) ||
+        apiError.body?.message ||
+        apiError.statusText ||
+        `Error ${apiError.status}`;
+
+      alert(`Error al realizar la operación: ${errorMsg}`);
       setApiConfig({ location: null, method: null, payload: null });
     }
   }, [apiResponse, apiError]);
@@ -57,6 +74,8 @@ export default function Admin() {
   // Efectos para actualizar el estado cuando los datos se cargan
   useEffect(() => { setProducts(productsContent?.content ?? []) }, [productsContent]);
   useEffect(() => { setCategories(categoriesContent?.content ?? []) }, [categoriesContent]);
+  useEffect(() => { setProductosDesc(productsDiscontContent?.content ?? []) }, [productsDiscontContent]);
+  useEffect(() => { setCategoriasDesc(categoriesDiscontContent?.content ?? []) }, [categoriesDiscontContent]);
   useEffect(() => { setPedidos(pedidosContent?.content ?? []) }, [pedidosContent]);
 
   // --- FUNCIONES CRUD PARA CATEGORÍAS ---
@@ -152,6 +171,19 @@ const handleSaveProducto = async () => {
     }
   };
 
+  // --- FUNCIONES PARA REACTIVAR ---
+  const handleReactivarCategoria = (id) => {
+    if (window.confirm("¿Reactivar esta categoría?")) {
+      setApiConfig({ location: `categorias/reactivar/${id}`, method: 'PUT', payload: {} });
+    }
+  };
+
+  const handleReactivarProducto = (id) => {
+    if (window.confirm("¿Reactivar este producto?")) {
+      setApiConfig({ location: `productos/reactivar/${id}`, method: 'PUT', payload: {} });
+    }
+  };
+
   // --- FUNCIONES PARA PEDIDOS ---
   const handleUpdateEstadoPedido = (id, nuevoEstado) => {
     setApiConfig({ location: `pedidos/estado/${id}`, method: 'PUT', payload: { estado: nuevoEstado } });
@@ -182,13 +214,19 @@ const handleSaveProducto = async () => {
           <button onClick={() => setActiveTab("pedidos")} className={`flex items-center gap-2 px-6 py-3 font-medium transition-colors ${activeTab === "pedidos" ? "text-orange-600 border-b-2 border-orange-600" : "text-gray-600 hover:text-gray-900"}`}>
             <ShoppingBag className="w-5 h-5" /> Pedidos
           </button>
+          <button onClick={() => setActiveTab("categoriasDescontinuadas")} className={`flex items-center gap-2 px-6 py-3 font-medium transition-colors ${activeTab === "categoriasDescontinuadas" ? "text-orange-600 border-b-2 border-orange-600" : "text-gray-600 hover:text-gray-900"}`}>
+            <ShoppingBag className="w-5 h-5" /> Categorias Descontinuadas
+          </button>
+          <button onClick={() => setActiveTab("productosDescontinuados")} className={`flex items-center gap-2 px-6 py-3 font-medium transition-colors ${activeTab === "productosDescontinuados" ? "text-orange-600 border-b-2 border-orange-600" : "text-gray-600 hover:text-gray-900"}`}>
+            <ShoppingBag className="w-5 h-5" /> Productos Descontinuados
+          </button>
         </div>
 
         {/* Categories Tab Content */}
         {activeTab === "categories" && (
           <div>
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Gestión de Categorías</h2>
+              <h2 className="text-2xl font-bold text-gray-900">Gestión de Categorías Activas</h2>
               <Button onClick={() => { setEditingCategoria(null); setCategoriaForm({ nombre: "", descripcion: "" }); setShowCategoriaModal(true); }}>
                 <Plus className="w-4 h-4 mr-2" /> Nueva Categoría
               </Button>
@@ -216,13 +254,40 @@ const handleSaveProducto = async () => {
         {activeTab === "products" && (
             <div>
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Gestión de Productos</h2>
+                <h2 className="text-2xl font-bold text-gray-900">Gestión de Productos Activos</h2>
                 <Button onClick={() => { setEditingProducto(null); setProductoForm({ nombre: "", descripcion: "", precio: "", stock: "", categoriaId: "" }); setShowProductoModal(true);}}>
                 <Plus className="w-4 h-4 mr-2" /> Nuevo Producto
                 </Button>
             </div>
             <div className="grid gap-4">
                 {products.map((producto) => (
+                <Card key={producto.id} className="p-6">
+                    <div className="flex gap-6">
+                    <img src={producto.imageUrl ? imagesUrl + producto.imageUrl : '/placeholder.svg'} alt={producto.nombre} className="w-24 h-24 object-cover rounded-lg"/>
+                    <div className="flex-1">
+                        <h3 className="text-xl font-semibold text-gray-900 mb-2">{producto.nombre}</h3>
+                        <p className="text-gray-600 mb-3">{producto.descripcion}</p>
+                        <div className="flex gap-4 text-sm">
+                        <span className="text-gray-700"><strong>Precio:</strong> ${producto.precio}</span>
+                        <span className="text-gray-700"><strong>Stock:</strong> {producto.stock}</span>
+                        </div>
+                    </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => handleReactivarProducto(producto.id)}>Reactivar</Button>
+          </div>
+                    </div>
+                </Card>
+                ))}
+            </div>
+            </div>
+        )}
+        {activeTab === "productosDescontinuados" && (
+            <div>
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Gestión de Productos Descontinuados</h2>
+            </div>
+            <div className="grid gap-4">
+                {productosDesc.map((producto) => (
                 <Card key={producto.id} className="p-6">
                     <div className="flex gap-6">
                     <img src={producto.imageUrl ? imagesUrl + producto.imageUrl : '/placeholder.svg'} alt={producto.nombre} className="w-24 h-24 object-cover rounded-lg"/>
@@ -243,8 +308,29 @@ const handleSaveProducto = async () => {
                 ))}
             </div>
             </div>
+        )}  
+        {activeTab === "categoriasDescontinuadas" && (
+          <div>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">Gestión de Categorías Descontinuadas</h2>
+            </div>
+            <div className="grid gap-4">
+              {categoriasDesc.map((categoria) => (
+                <Card key={categoria.id} className="p-6">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">{categoria.nombreCategoria}</h3>
+                      <p className="text-gray-600">{categoria.descripcion}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={() => handleReactivarCategoria(categoria.id)}>Reactivar</Button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
         )}
-
         {/* Orders Tab Content */}
         {activeTab === "pedidos" && (
             <div>
