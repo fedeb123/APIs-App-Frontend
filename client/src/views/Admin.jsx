@@ -301,7 +301,7 @@ const handleSaveProducto = async () => {
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => handleReactivarProducto(producto)}><Pencil className="w-4 h-4" /></Button>
+                        <Button variant="outline" size="sm" onClick={() => handleReactivarProducto(producto)}>Reactivar</Button>
                     </div>
                     </div>
                 </Card>
