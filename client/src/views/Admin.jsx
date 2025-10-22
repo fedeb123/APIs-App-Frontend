@@ -358,10 +358,10 @@ const handleSaveProducto = async () => {
                         </div>
                         ))}
                     </div>
-                    <div className="flex gap-2">
+                    {/* <div className="flex gap-2">
                         <Button variant="outline" size="sm" onClick={() => handleUpdateEstadoPedido(pedido.id, "PENDIENTE")} disabled={pedido.estado === "PENDIENTE"}>Marcar Pendiente</Button>
                         <Button variant="outline" size="sm" onClick={() => handleUpdateEstadoPedido(pedido.id, "CONFIRMADO")} disabled={pedido.estado === "CONFIRMADO"}>Marcar Confirmado</Button>
-                    </div>
+                    </div> */}
                     </Card>
                 ))}
                 </div>
