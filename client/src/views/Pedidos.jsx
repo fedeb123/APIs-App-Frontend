@@ -110,8 +110,6 @@ export default function Pedidos() {
 
     detalles.map((item) => {
 
-      console.log(mapStockAndStateProductsById)
-
       if (mapStockAndStateProductsById?.[item.productoId] == undefined) {
         alert(`Momentaneamente no comercializamos el producto: ${item.nombreProducto}. Intente mas tarde.`)
         exepcionDescontinuado = true
