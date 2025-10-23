@@ -42,6 +42,10 @@ export default function Admin() {
   const [categoriaForm, setCategoriaForm] = useState({ nombre: "", descripcion: "" });
   const [productoForm, setProductoForm] = useState({ nombre: "", descripcion: "", precio: "", stock: "", categoriaId: "" });
 
+  //barra de busqueda y de filtrado de estado de pedidos
+  const [pedidoSearch, setPedidoSearch] = useState("")
+  const [pedidoEstado, setPedidoEstado] = useState("")
+
   //use memo salva memoria solo ejecutandose cuando
   //sus dependencias cambian
   //es como un useEffect pero para calcular y guardar cosas
@@ -57,6 +61,24 @@ export default function Admin() {
       }
     }, {})
   }, [users])
+
+  const pedidosFiltrados = useMemo(() => {
+    const termino = pedidoSearch.trim().toLowerCase()
+    const estadoSel = pedidoEstado.trim()
+
+    const lista = Array.isArray(pedidos) ? pedidos : []
+
+    return lista.filter((pedido) => {
+     
+      // filtrado por estado
+      if (estadoSel && pedido.estado !== estadoSel) return false;
+
+      //filtrado por email
+      if (!termino) return true;
+      const email = mapUsersById?.[pedido.clienteId]?.email?.toLowerCase() ?? "";
+      return email.includes(termino);
+    })
+  }, [pedidos, pedidoSearch, pedidoEstado, mapUsersById]);
 
   // --- EFECTOS PARA MANEJAR DATOS Y RESPUESTAS DE API ---
 
@@ -134,7 +156,7 @@ export default function Admin() {
     if (productoForm.imagenFile) {
       formData.append("imagen", productoForm.imagenFile);
     }
-
+    
     setApiConfig({location: (editingProducto ? `productos/${editingProducto.id}`: `productos`), method: (editingProducto ? "PUT" : "POST"), payload: formData});
 
     setShowProductoModal(false);
@@ -253,6 +275,11 @@ export default function Admin() {
                     <div>
                       <span className="block text-sm text-gray-500">Dirección</span>
                       <span className="font-medium">{u.direccion ?? "-"}</span>
+                    </div>
+
+                    <div>
+                      <span className="block text-sm text-gray-500">Email</span>
+                      <span className="font-medium">{u.email ?? "-"}</span>
                     </div>
 
                     <div>
@@ -388,17 +415,45 @@ export default function Admin() {
         {activeTab === "pedidos" && (
             <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Gestión de Pedidos</h2>
+                <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between mb-4">
+                  <div className="flex-1">
+                    <Input
+                      value={pedidoSearch}
+                      onChange={(e) => setPedidoSearch(e.target.value)}
+                      placeholder="Buscar por email del usuario…"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <select
+                      value={pedidoEstado}
+                      onChange={(e) => setPedidoEstado(e.target.value)}
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    >
+                      <option value="">Todos los estados</option>
+                      <option value="PENDIENTE">PENDIENTE</option>
+                      <option value="CONFIRMADO">CONFIRMADO</option>
+                      <option value="ENVIADO">ENVIADO</option>
+                    </select>
+
+                    {(pedidoSearch || pedidoEstado) && (
+                      <Button variant="outline" onClick={() => { setPedidoSearch(""); setPedidoEstado(""); }}>
+                        Limpiar
+                      </Button>
+                    )}
+                  </div>
+                </div>
                 <div className="grid gap-4">
-                {pedidos.map((pedido) => (
+                {pedidosFiltrados.map((pedido) => (
                     <Card key={pedido.id} className="p-6">
                     <div className="flex justify-between items-start mb-4">
                         <div>
                         <h3 className="text-xl font-semibold text-gray-900 mb-1">Pedido #{pedido.id}</h3>
-                        <p className="text-gray-600">Cliente: {`${mapUsersById[pedido.clienteId].nombre} - #${pedido.clienteId}`}</p>
+                        <p className="text-gray-600">Cliente: {`${mapUsersById?.[pedido.clienteId]?.nombre} - #${pedido.clienteId}`}</p>
                         <p className="text-sm text-gray-500">Fecha: {new Date(pedido.fechaPedido).toLocaleDateString()}</p>
-                        <p className="text-gray-600">Direccion de Envio: {mapUsersById[pedido.clienteId].direccion}</p>
-                        <p className="text-gray-600">Telefono: {mapUsersById[pedido.clienteId].telefono}</p>
-                        <p className="text-gray-600">Email: {mapUsersById[pedido.clienteId].email}</p>
+                        <p className="text-gray-600">Direccion de Envio: {mapUsersById?.[pedido.clienteId]?.direccion}</p>
+                        <p className="text-gray-600">Telefono: {mapUsersById?.[pedido.clienteId]?.telefono}</p>
+                        <p className="text-gray-600">Email: {mapUsersById?.[pedido.clienteId]?.email}</p>
                         </div>
                         <div className="text-right">
                         <p className="text-2xl font-bold text-orange-600">${pedido.precioTotal.toFixed(2)}</p>
