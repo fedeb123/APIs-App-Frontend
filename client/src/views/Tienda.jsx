@@ -239,7 +239,7 @@ export default function Tienda() {
                           <div>
                             <p className="text-2xl font-bold text-orange-600">${product.precio}</p>
                             <p className={`text-xs ${product.stock < 10 ? "text-red-500" : "text-green-600"}`}>
-                              {product.stock < 10 ? `¡Solo ${product.stock} disponibles!` : `${product.stock} en stock`}
+                              {product.stock < 10 ? (product.stock == 0 ? `No hay stock momentaneamente` : `¡Solo ${product.stock} disponibles!`) : `${product.stock} en stock`}
                             </p>
                           </div>
                           <Button onClick={() => handleAgregarProducto(product)} size="sm" className="gap-2" disabled={product.stock === 0}>
