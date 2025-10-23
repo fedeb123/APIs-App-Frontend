@@ -122,11 +122,34 @@ export default function Admin() {
 
   // --- FUNCIONES CRUD PARA CATEGORÍAS ---
   const handleSaveCategoria = () => {
-    const payload = { nombreCategoria: categoriaForm.nombre, descripcion: categoriaForm.descripcion };
+    const nombreActual = editingCategoria?.nombreCategoria ?? "";
+    const descripcionActual = editingCategoria?.descripcion ?? "";
+
+    const nombreNuevo = (categoriaForm.nombre ?? "").trim();
+    const descripcionNueva = (categoriaForm.descripcion ?? "").trim();
+
+
     if (editingCategoria) {
+      const payload = {}
+
+      if (nombreNuevo && nombreNuevo !== nombreActual) {
+        payload.nombreCategoria = nombreNuevo;
+      }
+      
+      if (descripcionNueva !== descripcionActual) {
+        payload.descripcion = descripcionNueva;
+      }
+
+      if (Object.keys(payload).length === 0) {
+        alert("No hay cambios para guardar.");
+        return;
+      }
+
       setApiConfig({ location: `categorias/${editingCategoria.id}`, method: 'PUT', payload });
+
     } else {
-      setApiConfig({ location: 'categorias', method: 'POST', payload });
+        const payload = { nombreCategoria: nombreNuevo, descripcion: descripcionNueva} 
+        setApiConfig({ location: 'categorias', method: 'POST', payload });
     }
   };
 
