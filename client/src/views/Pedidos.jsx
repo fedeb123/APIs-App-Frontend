@@ -74,7 +74,7 @@ const ConfirmationModal = ({ pedido, onClose, onConfirm }) => {
             <p className="text-lg font-bold">Total a Pagar:</p>
             <p className="text-3xl font-extrabold text-orange-600">${precioFinal.toFixed(2)}</p>
           </div>
-          <Button className="w-full" onClick={() => onConfirm(pedido.id, codigoDescuento, metodoPago)}>
+          <Button className="w-full" onClick={() => onConfirm(pedido.id, codigoDescuento, metodoPago, pedido.detalles)}>
             Confirmar Compra y Facturar
           </Button>
         </CardContent>
@@ -83,12 +83,12 @@ const ConfirmationModal = ({ pedido, onClose, onConfirm }) => {
   );
 };
 
-
 // --- VISTA PRINCIPAL DE PEDIDOS (CON SECCIONES SEPARADAS) ---
 export default function Pedidos() {
   const { token } = useAuth();
   const [refresh, setRefresh] = useState(false);
   const [pedidos, setPedidos] = useState([]);
+  const [productos, setProductos] = useState([])
 
   const { response: responsePedidos, loading: loadingPedidos } = useFetch('pedidos/usuario', 'GET', null, token, refresh);
   
@@ -97,17 +97,47 @@ export default function Pedidos() {
   const [confirmLocation, setConfirmLocation] = useState(null);
 
   const { response: responseConfirm, error: errorConfirm } = useFetch(confirmLocation, 'PUT', confirmPayload, token);
+
+  const { response: responseProductos, loading: loadingProductos, error: errorProductos } = useFetch('productos', 'GET', null, null)
   
   const handleConfirmClick = (pedido) => setPedidoAConfirmar(pedido);
   const handleCloseModal = () => setPedidoAConfirmar(null);
 
-  const handleConfirmSubmit = (pedidoId, codigo, metodoPago) => {
+  const handleConfirmSubmit = (pedidoId, codigo, metodoPago, detalles) => {
+    
+    let faltante = false
+
+    detalles.map((item) => {
+      if (((mapStockProductsById?.[item.productoId] ?? 0) - (item?.cantidad ?? 0)) < 0) {
+        alert(`Momentaneamente no contamos con stock de: ${item.cantidad} para el producto: ${item.nombreProducto}. Intente mas tarde.`)
+        faltante = true;
+      }
+    })
+
+    if (faltante) {
+      handleCloseModal()
+      return;
+    }
+
     setConfirmLocation(`pedidos/${pedidoId}/confirmar`);
     setConfirmPayload({ 
       codigoDescuento: codigo,
       metodoDePago: metodoPago 
     });
   };
+
+  useEffect(() => {
+    if (responseProductos && !loadingProductos) {
+      setProductos(responseProductos.content)
+    }
+  }, [responseProductos, loadingProductos])
+
+  useEffect(() => {
+    if (errorProductos && !loadingProductos) {
+      console.error(JSON.stringify(errorProductos))
+      alert('Error al correlacionar stock de productos: ' + JSON.stringify(errorProductos))
+    }
+  }, [errorProductos, loadingProductos])
   
   useEffect(() => {
     if (responseConfirm) {
@@ -119,7 +149,19 @@ export default function Pedidos() {
       alert(`Error al confirmar el pedido: ${errorConfirm.body?.message || 'Error de servidor'}`);
     }
   }, [responseConfirm, errorConfirm]);
-  
+
+  const mapStockProductsById = useMemo(() => {
+    if (!Array.isArray(productos) || productos.length == 0) {
+      return
+    } 
+    return productos.reduce((accumulator, producto) => {
+      if (producto?.id != null) {
+        accumulator[producto.id] = producto.stock
+        return accumulator
+      }
+    }, {})
+  }, [productos])
+
   useEffect(() => {
     if (responsePedidos) setPedidos(responsePedidos || []);
   }, [responsePedidos]);
