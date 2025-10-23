@@ -131,7 +131,7 @@ export default function Pedidos() {
   );
 
   const pedidosConfirmados = useMemo(() => 
-    pedidos.filter(p => p.estado === 'CONFIRMADO'), 
+    pedidos.filter(p => !(p.estado === 'PENDIENTE')), 
     [pedidos]
   );
 
@@ -201,7 +201,12 @@ export default function Pedidos() {
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-gray-700">${pedido.precioTotal.toFixed(2)}</p>
-                    <span className="inline-block px-3 py-1 rounded-full text-sm font-medium mt-2 bg-green-100 text-green-800">{pedido.estado}</span>
+                    {(pedido.estado === 'CONFIRMADO') && (
+                      <span className="inline-block px-3 py-1 rounded-full text-sm font-medium mt-2 bg-green-100 text-green-800">{pedido.estado}</span>
+                    )}
+                    {(pedido.estado === 'ENVIADO') && (
+                      <span className="inline-block px-3 py-1 rounded-full text-sm font-medium mt-2 bg-blue-100 text-blue-800">{pedido.estado}</span>
+                    )}
                   </div>
                 </div>
                 <div className="border-t pt-4">
