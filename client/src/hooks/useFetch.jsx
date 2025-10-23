@@ -7,15 +7,19 @@ export default function useFetch(location, method, data = null, token = null, re
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
 
+  //verifica si recibe un un form que no es JSON
+  const isFormData = typeof FormData !== "undefined" && data instanceof FormData;
+
   const options = {
     method,
     headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
+      Accept: "application/json"
     },
   };
 
-  if (data) options.body = JSON.stringify(data);
+  if (!isFormData) options.headers["Content-Type"] = "application/json";
+  if (data && isFormData) options.body = data;
+  if (data && !isFormData) options.body = JSON.stringify(data);
   if (token) options.headers.Authorization = `Bearer ${token}`;
 
   const url = `${apiUrl}/${location}`;
@@ -74,7 +78,7 @@ export default function useFetch(location, method, data = null, token = null, re
     return () => {
       isActive = false;
     };
-  }, [location, token, JSON.stringify(data), refresh]);
+  }, [location, token, isFormData ? data : JSON.stringify(data), refresh]);
 
   return { response, loading, error };
 }
