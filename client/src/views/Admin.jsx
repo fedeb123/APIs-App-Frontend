@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
@@ -41,6 +41,22 @@ export default function Admin() {
   const [editingProducto, setEditingProducto] = useState(null);
   const [categoriaForm, setCategoriaForm] = useState({ nombre: "", descripcion: "" });
   const [productoForm, setProductoForm] = useState({ nombre: "", descripcion: "", precio: "", stock: "", categoriaId: "" });
+
+  //use memo salva memoria solo ejecutandose cuando
+  //sus dependencias cambian
+  //es como un useEffect pero para calcular y guardar cosas
+  //en vez de re renderizar
+  const mapUsersById = useMemo(() => {
+    if (!users) {
+      return
+    }
+    return users.reduce((accumulator, user) => {
+      if (user?.id != null) {
+        accumulator[user.id] = user;
+        return accumulator
+      }
+    }, {})
+  }, [users])
 
   // --- EFECTOS PARA MANEJAR DATOS Y RESPUESTAS DE API ---
 
@@ -401,8 +417,10 @@ const handleSaveProducto = async () => {
                     <div className="flex justify-between items-start mb-4">
                         <div>
                         <h3 className="text-xl font-semibold text-gray-900 mb-1">Pedido #{pedido.id}</h3>
-                        <p className="text-gray-600">Cliente: {pedido.clienteNombre}</p>
+                        <p className="text-gray-600">Cliente: {`${mapUsersById[pedido.clienteId].nombre} - #${pedido.clienteId}`}</p>
                         <p className="text-sm text-gray-500">Fecha: {new Date(pedido.fechaPedido).toLocaleDateString()}</p>
+                        <p className="text-gray-600">Direccion de Envio: {mapUsersById[pedido.clienteId].direccion}</p>
+                        <p className="text-gray-600">Telefono: {mapUsersById[pedido.clienteId].telefono}</p>
                         </div>
                         <div className="text-right">
                         <p className="text-2xl font-bold text-orange-600">${pedido.precioTotal.toFixed(2)}</p>
