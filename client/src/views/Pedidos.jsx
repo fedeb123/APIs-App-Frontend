@@ -109,14 +109,17 @@ export default function Pedidos() {
     let exepcionDescontinuado = false
 
     detalles.map((item) => {
-      if (((mapStockAndStateProductsById?.[item.productoId].stock ?? 0) - (item?.cantidad ?? 0)) < 0) {
-        alert(`Momentaneamente no contamos con stock de: ${item.cantidad} para el producto: ${item.nombreProducto}. Intente mas tarde.`)
-        exepcionFaltante = true;
-      }
 
-      if (!mapStockAndStateProductsById?.[item.productoId].activo) {
+      console.log(mapStockAndStateProductsById)
+
+      if (mapStockAndStateProductsById?.[item.productoId] == undefined) {
         alert(`Momentaneamente no comercializamos el producto: ${item.nombreProducto}. Intente mas tarde.`)
         exepcionDescontinuado = true
+      }
+
+      if (!exepcionDescontinuado && (((mapStockAndStateProductsById?.[item.productoId]?.stock ?? 0) - (item?.cantidad ?? 0)) < 0)) {
+        alert(`Momentaneamente no contamos con stock de: ${item.cantidad} para el producto: ${item.nombreProducto}. Intente mas tarde.`)
+        exepcionFaltante = true;
       }
       
     })
