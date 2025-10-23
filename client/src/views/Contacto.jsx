@@ -58,7 +58,7 @@ export default function Contacto() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground">Teléfono</h3>
-                  <p className="text-sm text-muted-foreground">+54 9 11 1234-5678</p>
+                  <p className="text-sm text-muted-foreground">+54 9 11 2245-4120</p>
                 </div>
               </div>
 
@@ -68,8 +68,8 @@ export default function Contacto() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground">Dirección</h3>
-                  <p className="text-sm text-muted-foreground">Av Siempre Viva 123</p>
-                  <p className="text-sm text-muted-foreground">Springfield, EEUU</p>
+                  <p className="text-sm text-muted-foreground">Estados Unidos 2332, Piso 7 - C1227 San Cristobal</p>
+                  <p className="text-sm text-muted-foreground">Cdad. Autónoma de Buenos Aires, Argentina</p>
                 </div>
               </div>
 
