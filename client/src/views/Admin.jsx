@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
-import { Pencil, Trash2, Plus, Package, Tag, ShoppingBag, X } from "lucide-react";
+import { Users, Pencil, Trash2, Plus, Package, Tag, ShoppingBag, X } from "lucide-react";
 import useFetch from "../hooks/useFetch";
 import useAuth from "../hooks/useAuth";
 
@@ -10,9 +10,10 @@ const imagesUrl = import.meta.env.VITE_APP_API_IMAGES_URL;
 
 export default function Admin() {
   // --- ESTADOS Y HOOKS ---
-  const [activeTab, setActiveTab] = useState("categories");
+  const [activeTab, setActiveTab] = useState("usuarios");
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
+  const [users, setUsers] = useState([]);
   const [productosDesc, setProductosDesc] = useState([]);
   const [categoriasDesc, setCategoriasDesc] = useState([]);
   const [pedidos, setPedidos] = useState([]);
@@ -28,6 +29,7 @@ export default function Admin() {
   const { response: productsDiscontContent } = useFetch('productos/descontinuados', 'GET', null, token, refresh);
   const { response: categoriesDiscontContent } = useFetch('categorias/descontinuadas', 'GET', null, token, refresh);
   const { response: pedidosContent } = useFetch('pedidos', 'GET', null, token, refresh);
+  const { response: usersContent } = useFetch('usuarios', 'GET', null, token)
 
   // Hook para ENVIAR datos (POST, PUT, DELETE)
   const { response: apiResponse, loading: apiLoading, error: apiError } = useFetch(apiConfig.location, apiConfig.method, apiConfig.payload, token);
@@ -78,6 +80,7 @@ export default function Admin() {
   useEffect(() => { setProductosDesc(productsDiscontContent?.content ?? []) }, [productsDiscontContent]);
   useEffect(() => { setCategoriasDesc(categoriesDiscontContent?.content ?? []) }, [categoriesDiscontContent]);
   useEffect(() => { setPedidos(pedidosContent?.content ?? []) }, [pedidosContent]);
+  useEffect(() => { setUsers(usersContent?.content ?? []) }, [usersContent]);
 
   // --- FUNCIONES CRUD PARA CATEGORÍAS ---
   const handleSaveCategoria = () => {
@@ -205,6 +208,9 @@ const handleSaveProducto = async () => {
 
         {/* Tabs */}
         <div className="flex gap-4 mb-8 border-b border-gray-200">
+          <button onClick={() => setActiveTab("usuarios")} className={`flex items-center gap-2 px-6 py-3 font-medium transition-colors ${activeTab === "usuarios" ? "text-orange-600 border-b-2 border-orange-600" : "text-gray-600 hover:text-gray-900"}`}>
+            <Users className="w-5 h-5" /> Usuarios
+          </button>
           <button onClick={() => setActiveTab("categories")} className={`flex items-center gap-2 px-6 py-3 font-medium transition-colors ${activeTab === "categories" ? "text-orange-600 border-b-2 border-orange-600" : "text-gray-600 hover:text-gray-900"}`}>
             <Tag className="w-5 h-5" /> Categorías
           </button>
@@ -221,7 +227,61 @@ const handleSaveProducto = async () => {
             <ShoppingBag className="w-5 h-5" /> Productos Descontinuados
           </button>
         </div>
+        {/* Pestania de Usuarios */}
+        {activeTab === "usuarios" && (
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Listado de Usuarios</h2>
 
+          <div className="grid gap-6">
+            {users?.length ? (
+              users.map((u) => (
+                <Card
+                  key={u.id}
+                  className="p-6 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 rounded-2xl"
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="text-xl font-semibold text-gray-800">
+                        {u.nombre ?? "-"} {u.apellido ?? "-"}
+                      </h3>
+                      <p className="text-sm text-gray-500">ID: {u.id ?? "-"}</p>
+                    </div>
+                    <div className="bg-gray-100 px-3 py-1 rounded-full text-sm font-medium text-gray-700">
+                      {u.rol?.nombre ?? "Sin rol"}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-gray-700">
+                    <div>
+                      <span className="block text-sm text-gray-500">Teléfono</span>
+                      <span className="font-medium">{u.telefono ?? "-"}</span>
+                    </div>
+
+                    <div>
+                      <span className="block text-sm text-gray-500">Dirección</span>
+                      <span className="font-medium">{u.direccion ?? "-"}</span>
+                    </div>
+
+                    <div>
+                      <span className="block text-sm text-gray-500">Pedidos</span>
+                      <span className="font-medium">
+                        {Array.isArray(u.pedidos)
+                          ? u.pedidos.length
+                          : u.pedidosCount ?? 0}
+                      </span>
+                    </div>
+                  </div>
+                </Card>
+              ))
+            ) : (
+              <Card className="p-6 text-gray-600 text-center">
+                No hay usuarios para mostrar.
+              </Card>
+            )}
+          </div>
+        </div>
+
+        )}
         {/* Categories Tab Content */}
         {activeTab === "categories" && (
           <div>
