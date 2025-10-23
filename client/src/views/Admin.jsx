@@ -204,14 +204,15 @@ const handleSaveProducto = async () => {
   };
 
   // --- FUNCIONES PARA PEDIDOS ---
-  const handleUpdateEstadoPedido = (id, nuevoEstado) => {
-    setApiConfig({ location: `pedidos/estado/${id}`, method: 'PUT', payload: { estado: nuevoEstado } });
+  const handleUpdateEstadoPedido = (id) => {
+    setApiConfig({ location: `pedidos/${id}/enviar`, method: 'PUT', payload: {} });
   };
 
   const getEstadoColor = (estado) => {
     switch (estado) {
       case "PENDIENTE": return "bg-yellow-100 text-yellow-800";
       case "CONFIRMADO": return "bg-green-100 text-green-800";
+      case "ENVIADO": return "bg-blue-100 text-blue-800";
       default: return "bg-gray-100 text-gray-800";
     }
   };
@@ -421,6 +422,7 @@ const handleSaveProducto = async () => {
                         <p className="text-sm text-gray-500">Fecha: {new Date(pedido.fechaPedido).toLocaleDateString()}</p>
                         <p className="text-gray-600">Direccion de Envio: {mapUsersById[pedido.clienteId].direccion}</p>
                         <p className="text-gray-600">Telefono: {mapUsersById[pedido.clienteId].telefono}</p>
+                        <p className="text-gray-600">Email: {mapUsersById[pedido.clienteId].email}</p>
                         </div>
                         <div className="text-right">
                         <p className="text-2xl font-bold text-orange-600">${pedido.precioTotal.toFixed(2)}</p>
@@ -436,10 +438,9 @@ const handleSaveProducto = async () => {
                         </div>
                         ))}
                     </div>
-                    {/* <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => handleUpdateEstadoPedido(pedido.id, "PENDIENTE")} disabled={pedido.estado === "PENDIENTE"}>Marcar Pendiente</Button>
-                        <Button variant="outline" size="sm" onClick={() => handleUpdateEstadoPedido(pedido.id, "CONFIRMADO")} disabled={pedido.estado === "CONFIRMADO"}>Marcar Confirmado</Button>
-                    </div> */}
+                    <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => handleUpdateEstadoPedido(pedido.id)} disabled={!(pedido.estado === "CONFIRMADO")}>Marcar Enviado</Button>
+                    </div>
                     </Card>
                 ))}
                 </div>
