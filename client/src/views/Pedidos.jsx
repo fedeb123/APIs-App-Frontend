@@ -105,16 +105,23 @@ export default function Pedidos() {
 
   const handleConfirmSubmit = (pedidoId, codigo, metodoPago, detalles) => {
     
-    let faltante = false
+    let exepcionFaltante = false
+    let exepcionDescontinuado = false
 
     detalles.map((item) => {
-      if (((mapStockProductsById?.[item.productoId] ?? 0) - (item?.cantidad ?? 0)) < 0) {
+      if (((mapStockAndStateProductsById?.[item.productoId].stock ?? 0) - (item?.cantidad ?? 0)) < 0) {
         alert(`Momentaneamente no contamos con stock de: ${item.cantidad} para el producto: ${item.nombreProducto}. Intente mas tarde.`)
-        faltante = true;
+        exepcionFaltante = true;
       }
+
+      if (!mapStockAndStateProductsById?.[item.productoId].activo) {
+        alert(`Momentaneamente no comercializamos el producto: ${item.nombreProducto}. Intente mas tarde.`)
+        exepcionDescontinuado = true
+      }
+      
     })
 
-    if (faltante) {
+    if (exepcionFaltante || exepcionDescontinuado) {
       handleCloseModal()
       return;
     }
@@ -150,13 +157,13 @@ export default function Pedidos() {
     }
   }, [responseConfirm, errorConfirm]);
 
-  const mapStockProductsById = useMemo(() => {
+  const mapStockAndStateProductsById = useMemo(() => {
     if (!Array.isArray(productos) || productos.length == 0) {
       return
     } 
     return productos.reduce((accumulator, producto) => {
       if (producto?.id != null) {
-        accumulator[producto.id] = producto.stock
+        accumulator[producto.id] = { stock: producto.stock, activo: producto.activo }
         return accumulator
       }
     }, {})
