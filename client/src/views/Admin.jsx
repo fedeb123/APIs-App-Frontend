@@ -121,8 +121,8 @@ export default function Admin() {
   };
 
   // --- FUNCIONES CRUD PARA PRODUCTOS ---
-const handleSaveProducto = async () => {
-  try {
+  const handleSaveProducto = () => {
+    
     const formData = new FormData();
     formData.append("nombre", productoForm.nombre);
     formData.append("descripcion", productoForm.descripcion);
@@ -135,36 +135,12 @@ const handleSaveProducto = async () => {
       formData.append("imagen", productoForm.imagenFile);
     }
 
-    const url = editingProducto
-      ? `${import.meta.env.VITE_APP_API_URL}/productos/${editingProducto.id}`
-      : `${import.meta.env.VITE_APP_API_URL}/productos`;
-    const method = editingProducto ? "PUT" : "POST";
+    setApiConfig({location: (editingProducto ? `productos/${editingProducto.id}`: `productos`), method: (editingProducto ? "PUT" : "POST"), payload: formData});
 
-    const response = await fetch(url, {
-      method,
-      headers: {
-        Authorization: `Bearer ${token}` // solo Authorization, no Content-Type
-      },
-      body: formData
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || `Error ${response.status}`);
-    }
-
-    const data = await response.json();
-    alert(editingProducto ? "Producto actualizado con éxito!" : "Producto creado con éxito!");
-    setRefresh(prev => !prev);
     setShowProductoModal(false);
     setProductoForm({ nombre: "", descripcion: "", precio: "", stock: "", categoriaId: "", imagenFile: null });
     setEditingProducto(null);
-
-  } catch (err) {
-    console.error(err);
-    alert(`Error al guardar el producto: ${err.message}`);
-  }
-};
+  };
 
   const handleEditProducto = (producto) => {
     if (!producto || !producto.id) {
