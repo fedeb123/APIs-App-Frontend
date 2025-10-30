@@ -1,0 +1,36 @@
+import { Route, Routes } from "react-router-dom"
+import Home from "./views/Home"
+import Contacto from "./views/Contacto"
+import Nosotros from "./views/Nosotros"
+import Tienda from "./views/Tienda"
+import Login from "./views/Login"
+import Register from "./views/Register"
+import Perfil from "./views/Perfil"
+import Admin from "./views/Admin"
+import Pedidos from "./views/Pedidos"
+import { Header } from "./components/Header"
+import { AdminRoute } from "./components/AdminRoute.jsx"
+
+
+export default function App() {
+  return (
+    <>
+      <Header/>
+      <main className="container mx-auto p-6">
+        <Routes>
+          <Route path="/" element={<Home/>} />
+          <Route path="/contacto" element={<Contacto/>} />
+          <Route path="/nosotros" element={<Nosotros/>} />
+          <Route path="/tienda" element={<Tienda/>} />
+          <Route path="/login" element={<Login/>} />
+          <Route path="/register" element={<Register/>} />
+          <Route path="/perfil" element={<Perfil/>} />
+          <Route element={<AdminRoute />}>
+          <Route path="/admin" element={<Admin />} />
+        </Route>
+          <Route path="/pedidos" element={<Pedidos/>} />  
+        </Routes>
+      </main>
+    </>
+  )
+}
