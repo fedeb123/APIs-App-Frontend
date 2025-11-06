@@ -4,7 +4,7 @@ import { Button } from "../Button"
 
 const imagesUrl = import.meta.env.VITE_APP_API_IMAGES_URL
 
-export function ProductCard({ producto, onEdit, onDelete, showActions = true }) {
+export function ProductCard({ producto, onEdit, onDelete, showActions = true, showReactivar = false, onReactivar }) {
   return (
     <Card className="p-6">
       <div className="flex gap-6">
@@ -25,6 +25,11 @@ export function ProductCard({ producto, onEdit, onDelete, showActions = true }) 
             </span>
           </div>
         </div>
+        {showReactivar && (
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => onReactivar(producto.id)}>Reactivar</Button>
+          </div>
+        )}
         {showActions && (
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => onEdit(producto)}>

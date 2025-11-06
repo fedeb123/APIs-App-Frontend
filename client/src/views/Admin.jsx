@@ -325,8 +325,9 @@ export default function Admin() {
                 <ProductCard
                   key={producto.id}
                   producto={producto}
-                  onEdit={() => handleReactivarProducto(producto.id)}
+                  onReactivar={() => handleReactivarProducto(producto.id)}
                   showActions={false}
+                  showReactivar={true}
                 />
               ))}
             </div>
@@ -341,10 +342,12 @@ export default function Admin() {
                 <CategoryCard
                   key={categoria.id}
                   categoria={categoria}
-                  onEdit={() => handleReactivarCategoria(categoria.id)}
+                  onReactivar={() => handleReactivarCategoria(categoria.id)}
                   showActions={false}
+                  showReactivar={true}
                 />
               ))}
+              
             </div>
           </div>
         )}

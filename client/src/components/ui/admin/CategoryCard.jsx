@@ -2,7 +2,7 @@ import { Pencil, Trash2 } from "lucide-react"
 import { Card } from "../Card"
 import { Button } from "../Button"
 
-export function CategoryCard({ categoria, onEdit, onDelete, showActions = true }) {
+export function CategoryCard({ categoria, onEdit, onDelete, showActions = true, showReactivar = false, onReactivar }) {
   return (
     <Card className="p-6">
       <div className="flex justify-between items-start">
@@ -10,6 +10,11 @@ export function CategoryCard({ categoria, onEdit, onDelete, showActions = true }
           <h3 className="text-xl font-semibold text-gray-900 mb-2">{categoria.nombreCategoria}</h3>
           <p className="text-gray-600">{categoria.descripcion}</p>
         </div>
+        {showReactivar && (
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => onReactivar(categoria.id)}>Reactivar</Button>
+          </div>
+        )}
         {showActions && (
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => onEdit(categoria)}>
