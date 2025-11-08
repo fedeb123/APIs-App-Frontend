@@ -30,7 +30,7 @@ const productosSlice = createSlice({
         })
         .addCase(fetchProductos.fulfilled, (state, action) => {
             state.loading = false;
-            state.productos = [...state.productos, action.payload];
+            state.productos = [...state.productos, action.payload?.content || []];
         })
     }
 })
