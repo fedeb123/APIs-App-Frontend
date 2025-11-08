@@ -7,13 +7,15 @@ import { ProductCard } from "../components/ui/tienda/ProductCard"
 import { CategorySidebar } from "../components/ui/tienda/CategorySidebar"
 import { ProductModal } from "../components/ui/tienda/ProductModal"
 
+import { useDispatch, useSelector } from 'react-redux'
+import { fetchProductos } from "../features/productosSlice"
+
 export default function Tienda() {
   const [search, setSearch] = useState("")
   const [showModal, setShowModal] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [productosComprados, setProductosComprados] = useState([])
   const [filter, setFilter] = useState("todos")
-  const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
   const [filteredProducts, setFilteredProducts] = useState([])
   const [user, setUser] = useState(null)
@@ -22,13 +24,10 @@ export default function Tienda() {
 
   const { user: responseUser, loadingProfile, token } = useAuth()
   const navigate = useNavigate()
+  const dispatch = useDispatch()
 
-  const { response: productsContent, loading: loadingProducts, error: errorProducts } = useFetch("productos", "GET")
-  const {
-    response: categoriesContent,
-    loading: loadingCategories,
-    error: errorCategories,
-  } = useFetch("categorias", "GET")
+  const { productos: products, loading: loadingProducts, error: errorProducts } = useSelector((state) => state.productos)
+  const { response: categoriesContent, loading: loadingCategories, error: errorCategories } = useFetch("categorias", "GET")
   const { response: responsePost, loading: loadingPost, error: errorPost } = useFetch("pedidos", "POST", payload, token)
 
   useEffect(() => {
@@ -50,8 +49,8 @@ export default function Tienda() {
   }, [errorPost])
 
   useEffect(() => {
-    setProducts(productsContent?.content ?? [])
-  }, [productsContent])
+    dispatch(fetchProductos)
+  }, [dispatch])
 
   useEffect(() => {
     setCategories(categoriesContent?.content ?? [])
@@ -64,13 +63,10 @@ export default function Tienda() {
   }, [responseUser, loadingProfile])
 
   useEffect(() => {
-    if (errorProducts) {
-      console.error(JSON.stringify(errorProducts))
-    }
     if (errorCategories) {
       console.error(JSON.stringify(errorCategories))
     }
-  }, [errorProducts, errorCategories])
+  }, [errorCategories])
 
   const handleAgregarProducto = (product) => {
     if (!user || !token) {
