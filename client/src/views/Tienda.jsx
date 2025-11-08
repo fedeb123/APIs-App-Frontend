@@ -32,6 +32,7 @@ export default function Tienda() {
 
   useEffect(() => {
     if (products && categories) {
+      //console.log(products)
       setFilteredProducts(
         products.filter((p) => {
           const matchesSearch = p.nombre.toLowerCase().includes(search.toLowerCase())
@@ -49,7 +50,7 @@ export default function Tienda() {
   }, [errorPost])
 
   useEffect(() => {
-    dispatch(fetchProductos)
+    dispatch(fetchProductos())
   }, [dispatch])
 
   useEffect(() => {
