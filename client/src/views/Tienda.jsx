@@ -5,12 +5,12 @@ import { Card } from "../components/ui/Card"
 import { ProductCard } from "../components/ui/tienda/ProductCard"
 import { CategorySidebar } from "../components/ui/tienda/CategorySidebar"
 import { ProductModal } from "../components/ui/tienda/ProductModal"
-
 import { useDispatch, useSelector } from 'react-redux'
 import { createProducto, fetchProductosStockeados } from "../features/productosSlice"
 import { fetchCategorias } from "../features/categoriasSlice"
 import { createPedido } from "../features/pedidosSlice"
 
+import { useCart } from "../context/CartContext"
 
 export default function Tienda() {
   const [search, setSearch] = useState("")
@@ -26,6 +26,7 @@ export default function Tienda() {
   const { user: responseUser, loadingProfile, token } = useSelector((state) => state.auth)
   const navigate = useNavigate()
   const dispatch = useDispatch()
+  const { addToCart } = useCart()
 
   const { productos: products, loading: loadingProducts, error: errorProducts } = useSelector((state) => state.productos)
   const { categorias: categoriesContent, loading: loadingCategories, error: errorCategories } = useSelector((state)=> state.categorias)
@@ -67,7 +68,7 @@ export default function Tienda() {
 
   const handleAgregarProducto = (product) => {
     if (!user || !token) {
-      alert("Tienes que estar logueado para comprar, obviamente")
+      alert("Tienes que estar logueado para comprar")
       navigate("/login")
       return
     }
@@ -95,25 +96,17 @@ export default function Tienda() {
       return
     }
 
-    if(!selectedProduct) return
-
-    setProductosComprados([...productosComprados, {...selectedProduct, cantidad: quantity}])
-
-    const data = {
-      clienteId: user.id,
-      detalles: [
-        {
-          productoId: selectedProduct.id,
-          cantidad: quantity,
-        },
-      ],
-    }
-
-    dispatch(createPedido(data))
+    addToCart(selectedProduct, quantity)
     closeModal()
-
+    alert(`${selectedProduct.nombre} agregado al carrito`)
   }
 
+  useEffect(() => {
+    if (!loadingPost && responsePost) {
+      alert("Gracias por Tu Compra!")
+      navigate("/pedidos")
+    }
+  }, [responsePost, loadingPost])
 
   return (
     <div className="min-h-screen">
