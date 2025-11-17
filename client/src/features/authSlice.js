@@ -7,7 +7,7 @@ const loginUrl = `${apiUrl}/v1/auth/authenticate`
 const userUrl = `${apiUrl}/usuarios/usuario`
 
 const initialState = {
-    user: localStorage.getItem('user') ? localStorage.getItem('user') : null,
+    user: null,
     token: localStorage.getItem('jwtToken') ? localStorage.getItem('jwtToken') : null,
     loading: false,
     error: null
@@ -28,13 +28,19 @@ export const fetchUser = createAsyncThunk('auth/user', async() => {
     return data
 })
 
+export const logoutAndClear = () => (dispatch) => {
+  localStorage.removeItem("user");
+  localStorage.removeItem("jwtToken");
+  dispatch(logout());
+}
+
 const authSlice = createSlice({
     name: 'auth',
     initialState,
     reducers: {
         logout: (state) => {
-            state.user = null,
-            state.token = null
+            state.user = null;
+            state.token = null;
         }
     },
     extraReducers: (builder) => {
@@ -62,7 +68,7 @@ const authSlice = createSlice({
         .addCase(loginUser.fulfilled, (state, action) => {
             state.loading = false;
             state.token = action.payload.accessToken;
-            localStorage.setItem('jwtToken', JSON.stringify(action.payload.accessToken));
+            localStorage.setItem('jwtToken', action.payload.accessToken);
         })
         .addCase(fetchUser.pending, (state) => {
             state.loading = true;
