@@ -3,17 +3,16 @@ import { useNavigate , Link} from "react-router-dom"
 import { Button } from "../components/ui/Button"
 import { Input } from "../components/ui/Input"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
-import useFetch from "../hooks/useFetch"
-import useAuth from "../hooks/useAuth"
+
+import { useDispatch, useSelector } from 'react-redux'
+import { loginUser } from "../features/authSlice"
 
 export default function Login() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [payload, setPayload] = useState(null)
+  const dispatch = useDispatch()
 
-  const { user, loadingProfile, login } = useAuth(); 
-
-  const { response, loading, error } = useFetch('v1/auth/authenticate', 'POST', payload) 
+  const { user, loading: loadingProfile, error } = useSelector((state) => state.auth)
 
   let navigate = useNavigate()
 
@@ -24,14 +23,8 @@ export default function Login() {
       email: email,
       password: password,
     }
-    setPayload(data)
+    dispatch(loginUser(data))
   }
-
-  useEffect(() => {
-    if (response) {
-        login(response.accessToken)
-    }
-  }, [response])  
 
   useEffect(() => {
     if (user && !loadingProfile) {
