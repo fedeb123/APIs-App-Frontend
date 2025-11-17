@@ -13,22 +13,38 @@ const initialState = {
 }
 
 export const registerUser = createAsyncThunk('auth/register', async(userData) => {
-    const { data } = await axios.post(registerUrl)
+    const { data } = await axios.post(registerUrl, userData)
     return data
 });
 
 export const loginUser = createAsyncThunk('auth/login', async(userCredentials) => {
-    const { data } = await axios.post(loginUrl)
+    const { data } = await axios.post(loginUrl, userCredentials)
     return data
 });
 
-const cartSlice = createSlice({
+const authSlice = createSlice({
     name: 'auth',
     initialState,
-    reducers: {},
+    reducers: {
+        logout: (state) => {
+            state.user = null,
+            state.token = null
+        }
+    },
     extraReducers: (builder) => {
-        builder.addCase()
+        builder.addCase(registerUser.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        })
+        .addCase(registerUser.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.error?.message;
+        })
+        .addCase(registerUser.fulfilled, (state, action) => {
+            state.loading = false;
+            state.token = action.payload.accessToken;
+        })
     }
 })
 
-export default cartSlice.reducer;
+export default authSlice.reducer;
