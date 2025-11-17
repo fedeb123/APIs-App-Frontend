@@ -1,5 +1,4 @@
 import axios from 'axios'
-import store from '../store'
 
 const apiUrl = import.meta.env.VITE_APP_API_URL;
 
@@ -14,17 +13,19 @@ const requester = axios.create({
 * inyectarles el token de usuario registrado
 */
 
-requester.interceptors.request.use((options) => {
-    const state = store.getState();
-    const token = state.auth.token;
+export function attachInterceptor (store) {
+    requester.interceptors.request.use((options) => {
+        const state = store.getState();
+        const token = state.auth.token;
 
-    if (token) {
-        options.headers.Authorization = `Bearer ${token}`
-    }
+        if (token) {
+            options.headers.Authorization = `Bearer ${token}`
+        }
 
-    return options
-}, (error) => {
-    Promise.reject(error);
-})
+        return options
+    }, (error) => {
+        return Promise.reject(error);
+    })
+}
 
 export default requester;
