@@ -1,8 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
-import axios from 'axios'
-
-const apiUrl = import.meta.env.VITE_APP_API_URL;
-const productosUrl = `${apiUrl}/productos`
+import requester from "./interceptor/axios";
 
 const initialState = {
     productos: [],
@@ -11,7 +8,7 @@ const initialState = {
 }
 
 export const fetchProductos = createAsyncThunk('productos/fetch', async() => {
-    const { data } = await axios.get(productosUrl)
+    const { data } = await requester.get('/productos')
     return data
 });
 
