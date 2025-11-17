@@ -7,8 +7,8 @@ const loginUrl = `${apiUrl}/v1/auth/authenticate`
 const userUrl = `${apiUrl}/usuarios/usuario`
 
 const initialState = {
-    user: null,
-    token: null,
+    user: localStorage.getItem('user') ? localStorage.getItem('user') : null,
+    token: localStorage.getItem('jwtToken') ? localStorage.getItem('jwtToken') : null,
     loading: false,
     error: null
 }
@@ -23,7 +23,7 @@ export const loginUser = createAsyncThunk('auth/login', async(userCredentials) =
     return data
 });
 
-const fetchUser = createAsyncThunk('auth/user', async() => {
+export const fetchUser = createAsyncThunk('auth/user', async() => {
     const { data } = await requester.get(userUrl)
     return data
 })
@@ -49,7 +49,7 @@ const authSlice = createSlice({
         .addCase(registerUser.fulfilled, (state, action) => {
             state.loading = false;
             state.token = action.payload.accessToken;
-            fetchUser();
+            localStorage.setItem('jwtToken', action.payload.accessToken);
         })
         .addCase(loginUser.pending, (state) => {
             state.loading = true;
@@ -62,7 +62,7 @@ const authSlice = createSlice({
         .addCase(loginUser.fulfilled, (state, action) => {
             state.loading = false;
             state.token = action.payload.accessToken;
-            fetchUser();
+            localStorage.setItem('jwtToken', JSON.stringify(action.payload.accessToken));
         })
         .addCase(fetchUser.pending, (state) => {
             state.loading = true;
@@ -75,6 +75,7 @@ const authSlice = createSlice({
         .addCase(fetchUser.fulfilled, (state, action) => {
             state.loading = false;
             state.user = action.payload;
+            localStorage.setItem('user', JSON.stringify(action.payload))
         })
     }
 })
