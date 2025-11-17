@@ -1,34 +1,31 @@
 import { useState, useEffect, useMemo } from "react"
-import { Clock, ShoppingCart } from "lucide-react"
+import { Clock, ShoppingCart } from 'lucide-react'
+import { useLocation, useNavigate } from "react-router-dom"
 import useFetch from "../hooks/useFetch"
 import useAuth from "../hooks/useAuth"
+import { useCart } from "../context/CartContext"
 import { ConfirmationModal } from "../components/ui/pedidos/ConfirmationModal"
 import { OrderCard } from "../components/ui/pedidos/OrderCard"
 
 export default function Pedidos() {
-  const { token } = useAuth()
+  const { token, user } = useAuth()
+  const { cart, clearCart } = useCart()
+  const location = useLocation()
+  const navigate = useNavigate()
   const [refresh, setRefresh] = useState(false)
   const [pedidos, setPedidos] = useState([])
   const [productos, setProductos] = useState([])
+  const [cartPayload, setCartPayload] = useState(null)
 
-  const { response: responsePedidos, loading: loadingPedidos } = useFetch(
-    "pedidos/usuario",
-    "GET",
-    null,
-    token,
-    refresh,
-  )
+  const { response: responsePedidos, loading: loadingPedidos } = useFetch("pedidos/usuario", "GET", null, token, refresh)
 
   const [pedidoAConfirmar, setPedidoAConfirmar] = useState(null)
   const [confirmPayload, setConfirmPayload] = useState(null)
   const [confirmLocation, setConfirmLocation] = useState(null)
 
   const { response: responseConfirm, error: errorConfirm } = useFetch(confirmLocation, "PUT", confirmPayload, token)
-  const {
-    response: responseProductos,
-    loading: loadingProductos,
-    error: errorProductos,
-  } = useFetch("productos", "GET", null, null)
+  const { response: responseProductos, loading: loadingProductos, error: errorProductos } = useFetch("productos", "GET", null, null)
+  const { response: responseCartOrder, loading: loadingCartOrder, error: errorCartOrder } = useFetch("pedidos", "POST", cartPayload, token)
 
   const handleConfirmClick = (pedido) => setPedidoAConfirmar(pedido)
   const handleCloseModal = () => setPedidoAConfirmar(null)
@@ -65,6 +62,35 @@ export default function Pedidos() {
       metodoDePago: metodoPago,
     })
   }
+
+  useEffect(() => {
+    const cartFromState = location.state?.cart
+    
+    if (cartFromState && cartFromState.length > 0 && user) {
+      const data = {
+        clienteId: user.id,
+        detalles: cartFromState.map(item => ({
+          productoId: item.id,
+          cantidad: item.cantidad,
+        })),
+      }
+      setCartPayload(data)
+    }
+  }, [location.state, user])
+
+  useEffect(() => {
+    if (!loadingCartOrder && responseCartOrder) {
+      alert("Pedido creado! Ahora confírmalo para finalizarlo.")
+      clearCart()
+      setCartPayload(null)
+      setRefresh((prev) => !prev)
+      navigate("/pedidos", { replace: true, state: {} })
+    }
+    if (errorCartOrder) {
+      alert(`Error al crear el pedido: ${errorCartOrder.body?.message || "Error de servidor"}`)
+      setCartPayload(null)
+    }
+  }, [responseCartOrder, loadingCartOrder, errorCartOrder, clearCart, navigate])
 
   useEffect(() => {
     if (responseProductos && !loadingProductos) {
@@ -108,7 +134,7 @@ export default function Pedidos() {
 
   const pedidosConfirmados = useMemo(() => pedidos.filter((p) => !(p.estado === "PENDIENTE")), [pedidos])
 
-  if (loadingPedidos) return <div className="text-center py-10">Cargando pedidos...</div>
+  if (loadingPedidos || loadingCartOrder) return <div className="text-center py-10">Cargando pedidos...</div>
 
   return (
     <div className="container mx-auto py-10">
