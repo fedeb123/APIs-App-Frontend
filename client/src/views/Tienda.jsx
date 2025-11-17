@@ -6,9 +6,9 @@ import useAuth from "../hooks/useAuth"
 import { ProductCard } from "../components/ui/tienda/ProductCard"
 import { CategorySidebar } from "../components/ui/tienda/CategorySidebar"
 import { ProductModal } from "../components/ui/tienda/ProductModal"
-
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchProductos } from "../features/productosSlice"
+import { useCart } from "../context/CartContext"
 
 export default function Tienda() {
   const [search, setSearch] = useState("")
@@ -25,6 +25,7 @@ export default function Tienda() {
   const { user: responseUser, loadingProfile, token } = useAuth()
   const navigate = useNavigate()
   const dispatch = useDispatch()
+  const { addToCart } = useCart()
 
   const { productos: products, loading: loadingProducts, error: errorProducts } = useSelector((state) => state.productos)
   const { response: categoriesContent, loading: loadingCategories, error: errorCategories } = useFetch("categorias", "GET")
@@ -32,7 +33,6 @@ export default function Tienda() {
 
   useEffect(() => {
     if (products && categories) {
-      //console.log(products)
       setFilteredProducts(
         products.filter((p) => {
           const matchesSearch = p.nombre.toLowerCase().includes(search.toLowerCase())
@@ -71,7 +71,7 @@ export default function Tienda() {
 
   const handleAgregarProducto = (product) => {
     if (!user || !token) {
-      alert("Tienes que estar logueado para comprar, obviamente")
+      alert("Tienes que estar logueado para comprar")
       navigate("/login")
       return
     }
@@ -99,19 +99,9 @@ export default function Tienda() {
       return
     }
 
-    setProductosComprados([...productosComprados, { ...selectedProduct, cantidad: quantity }])
-
-    const data = {
-      clienteId: user.id,
-      detalles: [
-        {
-          productoId: selectedProduct.id,
-          cantidad: quantity,
-        },
-      ],
-    }
-
-    setPayload(data)
+    addToCart(selectedProduct, quantity)
+    closeModal()
+    alert(`${selectedProduct.nombre} agregado al carrito`)
   }
 
   useEffect(() => {
