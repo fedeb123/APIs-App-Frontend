@@ -1,9 +1,10 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
-import axios from 'axios'
+import requester from "./interceptor/axios";
 
 const apiUrl = import.meta.env.VITE_APP_API_URL;
 const registerUrl = `${apiUrl}/v1/auth/register`
 const loginUrl = `${apiUrl}/v1/auth/authenticate`
+const userUrl = `${apiUrl}/usuarios/usuario`
 
 const initialState = {
     user: null,
@@ -13,14 +14,19 @@ const initialState = {
 }
 
 export const registerUser = createAsyncThunk('auth/register', async(userData) => {
-    const { data } = await axios.post(registerUrl, userData)
+    const { data } = await requester.post(registerUrl, userData)
     return data
 });
 
 export const loginUser = createAsyncThunk('auth/login', async(userCredentials) => {
-    const { data } = await axios.post(loginUrl, userCredentials)
+    const { data } = await requester.post(loginUrl, userCredentials)
     return data
 });
+
+const fetchUser = createAsyncThunk('auth/user', async() => {
+    const { data } = await requester.get(userUrl)
+    return data
+})
 
 const authSlice = createSlice({
     name: 'auth',
@@ -43,8 +49,34 @@ const authSlice = createSlice({
         .addCase(registerUser.fulfilled, (state, action) => {
             state.loading = false;
             state.token = action.payload.accessToken;
+            fetchUser();
+        })
+        .addCase(loginUser.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        })
+        .addCase(loginUser.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.error?.message;
+        })
+        .addCase(loginUser.fulfilled, (state, action) => {
+            state.loading = false;
+            state.token = action.payload.accessToken;
+            fetchUser();
+        })
+        .addCase(fetchUser.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        })
+        .addCase(fetchUser.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.error?.message;
+        })
+        .addCase(fetchUser.fulfilled, (state, action) => {
+            state.loading = false;
+            state.user = action.payload;
         })
     }
 })
-
+export const { logout } = authSlice.actions;
 export default authSlice.reducer;
