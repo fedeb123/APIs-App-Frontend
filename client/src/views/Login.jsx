@@ -5,14 +5,14 @@ import { Input } from "../components/ui/Input"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
 
 import { useDispatch, useSelector } from 'react-redux'
-import { loginUser } from "../features/authSlice"
+import { fetchUser, loginUser } from "../features/authSlice"
 
 export default function Login() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const dispatch = useDispatch()
 
-  const { user, loading: loadingProfile, error } = useSelector((state) => state.auth)
+  const { user, token, loading: loadingProfile, error } = useSelector((state) => state.auth)
 
   let navigate = useNavigate()
 
@@ -25,6 +25,12 @@ export default function Login() {
     }
     dispatch(loginUser(data))
   }
+
+  useEffect(() => {
+    if (token && !loadingProfile) {
+      dispatch(fetchUser())
+    }
+  }, [token, loadingProfile])
 
   useEffect(() => {
     if (user && !loadingProfile) {

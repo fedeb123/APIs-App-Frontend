@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
 import { Link, useNavigate } from "react-router-dom"
 
 import { useDispatch, useSelector } from 'react-redux'
-import { registerUser } from "../features/authSlice"
+import { fetchUser, registerUser } from "../features/authSlice"
 
 const estadoInicialForm = {
     nombre: '',
@@ -44,7 +44,7 @@ const Register=()=>{
     const dispatchRedux = useDispatch()
 
     const[form, dispatch] = useReducer(reducer, estadoInicialForm)
-    const { user: profile, loading: loadingProfile, error } = useSelector((state) => state.auth)
+    const { user: profile, token, loading: loadingProfile, error } = useSelector((state) => state.auth)
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -72,6 +72,12 @@ const Register=()=>{
             alert(`Ha ocurrido un error en el registro: ${JSON.stringify(error)}`)
         }
     }, [error])
+
+    useEffect(() => {
+        if (token && !loadingProfile) {
+            dispatchRedux(fetchUser());
+        }
+    }, [token, loadingProfile])
 
     useEffect(() => {
         if (profile && !loadingProfile) {
