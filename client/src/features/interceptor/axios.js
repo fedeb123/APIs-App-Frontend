@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { logoutAndClear } from '../authSlice';
 
 const apiUrl = import.meta.env.VITE_APP_API_URL;
 
@@ -11,6 +12,9 @@ const requester = axios.create({
 * una url de base para toda request (que es la direccion del back del env)
 * y luego intercepta todas las request de cualquier tipo para 
 * inyectarles el token de usuario registrado
+* 
+* El interceptor de response detecta si hay problemas con vencimiento de token
+* o manipulacion del mismo y realiza logout.
 */
 
 export function attachInterceptor (store) {
@@ -24,6 +28,13 @@ export function attachInterceptor (store) {
 
         return options
     }, (error) => {
+        return Promise.reject(error);
+    })
+
+    requester.interceptors.response.use((response) => response, (error) => {
+        if (error.response?.status === 401) {
+            store.dispatch(logoutAndClear());
+        }
         return Promise.reject(error);
     })
 }
