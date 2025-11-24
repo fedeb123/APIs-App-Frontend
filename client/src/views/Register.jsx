@@ -1,10 +1,11 @@
-import { useEffect, useReducer, useState } from "react"
+import { useEffect, useReducer } from "react"
 import { Button } from "../components/ui/Button"
 import { Input } from "../components/ui/Input"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
 import { Link, useNavigate } from "react-router-dom"
-import useFetch from "../hooks/useFetch"
-import useAuth from "../hooks/useAuth"
+
+import { useDispatch, useSelector } from 'react-redux'
+import { fetchUser, registerUser } from "../features/authSlice"
 
 const estadoInicialForm = {
     nombre: '',
@@ -40,11 +41,10 @@ function reducer(state, action){
 
 const Register=()=>{
     let navigate = useNavigate()
+    const dispatchRedux = useDispatch()
 
     const[form, dispatch] = useReducer(reducer, estadoInicialForm)
-    const [payload, setPayload] = useState(null)
-    const { response, error } = useFetch('v1/auth/register', 'POST', payload)
-    const { user: profile, loadingProfile, login } = useAuth()
+    const { user: profile, token, loading: loadingProfile, error } = useSelector((state) => state.auth)
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -63,7 +63,7 @@ const Register=()=>{
             rolId: 1
         }
 
-        setPayload(data)
+        dispatchRedux(registerUser(data))
     };
 
     useEffect(() => {
@@ -74,14 +74,14 @@ const Register=()=>{
     }, [error])
 
     useEffect(() => {
-        if (response) {
-            dispatch({type: 'RESET'})
-            login(response.accessToken)
+        if (token && !loadingProfile) {
+            dispatchRedux(fetchUser());
         }
-    }, [response])
+    }, [token, loadingProfile])
 
     useEffect(() => {
         if (profile && !loadingProfile) {
+            dispatch({type: 'RESET'})
             navigate('/tienda')
         }
     }, [profile, loadingProfile])

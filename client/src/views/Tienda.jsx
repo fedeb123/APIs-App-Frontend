@@ -22,7 +22,7 @@ export default function Tienda() {
   const [quantity, setQuantity] = useState(1)
   const [payload, setPayload] = useState(null)
 
-  const { user: responseUser, loadingProfile, token } = useAuth()
+  const { user: responseUser, loadingProfile, token } = useSelector((state) => state.auth)
   const navigate = useNavigate()
   const dispatch = useDispatch()
 

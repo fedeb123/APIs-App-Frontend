@@ -1,0 +1,89 @@
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
+import requester from "./interceptor/axios";
+
+const apiUrl = import.meta.env.VITE_APP_API_URL;
+const registerUrl = `${apiUrl}/v1/auth/register`
+const loginUrl = `${apiUrl}/v1/auth/authenticate`
+const userUrl = `${apiUrl}/usuarios/usuario`
+
+const initialState = {
+    user: null,
+    token: localStorage.getItem('jwtToken') ? localStorage.getItem('jwtToken') : null,
+    loading: false,
+    error: null
+}
+
+export const registerUser = createAsyncThunk('auth/register', async(userData) => {
+    const { data } = await requester.post(registerUrl, userData)
+    return data
+});
+
+export const loginUser = createAsyncThunk('auth/login', async(userCredentials) => {
+    const { data } = await requester.post(loginUrl, userCredentials)
+    return data
+});
+
+export const fetchUser = createAsyncThunk('auth/user', async() => {
+    const { data } = await requester.get(userUrl)
+    return data
+})
+
+export const logoutAndClear = () => (dispatch) => {
+  localStorage.removeItem("user");
+  localStorage.removeItem("jwtToken");
+  dispatch(logout());
+}
+
+const authSlice = createSlice({
+    name: 'auth',
+    initialState,
+    reducers: {
+        logout: (state) => {
+            state.user = null;
+            state.token = null;
+        }
+    },
+    extraReducers: (builder) => {
+        builder.addCase(registerUser.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        })
+        .addCase(registerUser.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.error?.message;
+        })
+        .addCase(registerUser.fulfilled, (state, action) => {
+            state.loading = false;
+            state.token = action.payload.accessToken;
+            localStorage.setItem('jwtToken', action.payload.accessToken);
+        })
+        .addCase(loginUser.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        })
+        .addCase(loginUser.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.error?.message;
+        })
+        .addCase(loginUser.fulfilled, (state, action) => {
+            state.loading = false;
+            state.token = action.payload.accessToken;
+            localStorage.setItem('jwtToken', action.payload.accessToken);
+        })
+        .addCase(fetchUser.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        })
+        .addCase(fetchUser.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.error?.message;
+        })
+        .addCase(fetchUser.fulfilled, (state, action) => {
+            state.loading = false;
+            state.user = action.payload;
+            localStorage.setItem('user', JSON.stringify(action.payload))
+        })
+    }
+})
+export const { logout } = authSlice.actions;
+export default authSlice.reducer;

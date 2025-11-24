@@ -1,23 +1,22 @@
-"use client"
-
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { User } from "lucide-react"
-import useAuth from "../hooks/useAuth.jsx"
+import { useDispatch, useSelector } from 'react-redux'
 import { UserDropdown } from "./ui/header/UserDropdown"
+import { logoutAndClear } from "../features/authSlice"
 
 export function Header() {
   const navigate = useNavigate()
-  const { user, logout } = useAuth()
+  const { user } = useSelector((state) => state.auth)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const dispatch = useDispatch()
 
   const userRole = user?.rol?.nombre
 
   const handleLogout = () => {
-    logout()
+    dispatch(logoutAndClear());
     setIsDropdownOpen(false)
     navigate("/")
-    window.location.reload()
   }
 
   return (
