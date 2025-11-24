@@ -1,18 +1,15 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
 import axios from "axios"
+import requester from "./interceptor/axios"
 
 const API_URL = import.meta.env.VITE_APP_API_URL || "http://localhost:8090"
 
 //pedidos de un usuario
 export const fetchPedidosUsuario = createAsyncThunk(
   "pedidos/fetchPedidosUsuario",
-  async (token) => {
-    const res = await axios.get(`${API_URL}/pedidos/usuario`, {
-      headers: {
-        Authorization: token ? `Bearer ${token}` : "",
-      },
-    })
-
+  async () => {
+    const res = await requester.get("/pedidos/usuario")
+    console.log(res)
     if (Array.isArray(res.data)) {
       return res.data
     }
@@ -25,12 +22,8 @@ export const fetchPedidosUsuario = createAsyncThunk(
 //todos los pedidos utilizado para admin
 export const fetchPedidosAdmin = createAsyncThunk(
   "pedidos/fetchPedidosAdmin",
-  async (token) => {
-    const res = await axios.get(`${API_URL}/pedidos`, {
-      headers: {
-        Authorization: token ? `Bearer ${token}` : "",
-      },
-    })
+  async () => {
+    const res = await requester.get("/pedidos")
 
     const data = res.data
 
@@ -45,17 +38,12 @@ export const fetchPedidosAdmin = createAsyncThunk(
 // confirmar pedido para cliente
 export const confirmPedido = createAsyncThunk(
   "pedidos/confirmPedido",
-  async ({ pedidoId, codigoDescuento, metodoDePago, token }) => {
-    const res = await axios.put(
-      `${API_URL}/pedidos/${pedidoId}/confirmar`,
+  async ({ pedidoId, codigoDescuento, metodoDePago }) => {
+    const res = await requester.put(
+      `/pedidos/${pedidoId}/confirmar`,
       {
         codigoDescuento,
         metodoDePago,
-      },
-      {
-        headers: {
-          Authorization: token ? `Bearer ${token}` : "",
-        },
       },
     )
 
@@ -66,15 +54,10 @@ export const confirmPedido = createAsyncThunk(
 // enviar un pedido admin
 export const enviarPedido = createAsyncThunk(
   "pedidos/enviarPedido",
-  async ({ pedidoId, token }) => {
-    const res = await axios.put(
-      `${API_URL}/pedidos/${pedidoId}/enviar`,
+  async ({ pedidoId }) => {
+    const res = await requester.put(
+      `/pedidos/${pedidoId}/enviar`,
       {},
-      {
-        headers: {
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-      },
     )
 
     return res.data

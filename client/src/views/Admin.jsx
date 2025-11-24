@@ -128,7 +128,7 @@ export default function Admin() {
   
   useEffect(() => {
     if (token && activeTab === "pedidos") {
-      dispatch(fetchPedidosAdmin(token))
+      dispatch(fetchPedidosAdmin())
     }
   }, [dispatch, token, activeTab, refresh])
   
@@ -231,7 +231,7 @@ export default function Admin() {
   }
 
   const handleUpdateEstadoPedido = (id) => {
-    dispatch(enviarPedido({ pedidoId: id, token }))
+    dispatch(enviarPedido({ pedidoId }))
   }
 
   return (

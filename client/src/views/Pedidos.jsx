@@ -31,7 +31,7 @@ export default function Pedidos() {
 
   useEffect(() => {
     if (token) {
-      dispatch(fetchPedidosUsuario(token))
+      dispatch(fetchPedidosUsuario())
     }
     dispatch(fetchProductos())
   }, [dispatch, token])
@@ -111,14 +111,13 @@ export default function Pedidos() {
         pedidoId,
         codigoDescuento: codigo,
         metodoDePago: metodoPago,
-        token,
       }),
     )
     .unwrap()
     .then(() => {
       alert("¡Pedido confirmado y facturado con éxito!")
       handleCloseModal()
-      dispatch(fetchPedidosUsuario(token))
+      dispatch(fetchPedidosUsuario())
     })
     .catch((err) => {
       alert(`Error al confirmar el pedido: ${err.message || "Error de servidor"}`)
