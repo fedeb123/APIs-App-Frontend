@@ -12,6 +12,10 @@ import { CategoryModal } from "../components/ui/admin/CategoryModal"
 import { ProductModal } from "../components/ui/admin/ProductModal"
 import { OrderCard } from "../components/ui/admin/OrderCard"
 
+import { useDispatch, useSelector } from "react-redux"
+import { fetchPedidosAdmin, enviarPedido } from "../features/pedidosSlice"
+
+
 export default function Admin() {
   const [activeTab, setActiveTab] = useState("usuarios")
   const [categories, setCategories] = useState([])
@@ -19,7 +23,7 @@ export default function Admin() {
   const [users, setUsers] = useState([])
   const [productosDesc, setProductosDesc] = useState([])
   const [categoriasDesc, setCategoriasDesc] = useState([])
-  const [pedidos, setPedidos] = useState([])
+  //const [pedidos, setPedidos] = useState([])
   const { token } = useAuth()
   const [refresh, setRefresh] = useState(false)
 
@@ -29,7 +33,14 @@ export default function Admin() {
   const { response: categoriesContent } = useFetch("categorias", "GET", null, token, refresh)
   const { response: productsDiscontContent } = useFetch("productos/descontinuados", "GET", null, token, refresh)
   const { response: categoriesDiscontContent } = useFetch("categorias/descontinuadas", "GET", null, token, refresh)
-  const { response: pedidosContent } = useFetch("pedidos", "GET", null, token, refresh)
+  //const { response: pedidosContent } = useFetch("pedidos", "GET", null, token, refresh)
+  const dispatch = useDispatch()
+  const {
+    items: pedidos,
+    loading: loadingPedidos,
+    error: errorPedidos,
+  } = useSelector((state) => state.pedidos)
+
   const { response: usersContent } = useFetch("usuarios", "GET", null, token)
 
   const {
@@ -111,9 +122,16 @@ export default function Admin() {
   useEffect(() => {
     setCategoriasDesc(categoriesDiscontContent?.content ?? [])
   }, [categoriesDiscontContent])
+  // useEffect(() => {
+  //   setPedidos(pedidosContent?.content ?? [])
+  // }, [pedidosContent])
+  
   useEffect(() => {
-    setPedidos(pedidosContent?.content ?? [])
-  }, [pedidosContent])
+    if (token && activeTab === "pedidos") {
+      dispatch(fetchPedidosAdmin(token))
+    }
+  }, [dispatch, token, activeTab, refresh])
+  
   useEffect(() => {
     setUsers(usersContent?.content ?? [])
   }, [usersContent])
@@ -213,7 +231,7 @@ export default function Admin() {
   }
 
   const handleUpdateEstadoPedido = (id) => {
-    setApiConfig({ location: `pedidos/${id}/enviar`, method: "PUT", payload: {} })
+    dispatch(enviarPedido({ pedidoId: id, token }))
   }
 
   return (
