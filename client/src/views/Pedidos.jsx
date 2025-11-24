@@ -1,54 +1,101 @@
 import { useState, useEffect, useMemo } from "react"
 import { Clock, ShoppingCart } from "lucide-react"
-import useFetch from "../hooks/useFetch"
+import { useDispatch, useSelector } from "react-redux"
+
 import useAuth from "../hooks/useAuth"
 import { ConfirmationModal } from "../components/ui/pedidos/ConfirmationModal"
 import { OrderCard } from "../components/ui/pedidos/OrderCard"
 
+import { fetchPedidosUsuario, confirmPedido } from "../features/pedidosSlice"
+import { fetchProductos } from "../features/productosSlice"
+
 export default function Pedidos() {
   const { token } = useAuth()
-  const [refresh, setRefresh] = useState(false)
-  const [pedidos, setPedidos] = useState([])
-  const [productos, setProductos] = useState([])
-
-  const { response: responsePedidos, loading: loadingPedidos } = useFetch(
-    "pedidos/usuario",
-    "GET",
-    null,
-    token,
-    refresh,
-  )
+  const dispatch = useDispatch()
 
   const [pedidoAConfirmar, setPedidoAConfirmar] = useState(null)
-  const [confirmPayload, setConfirmPayload] = useState(null)
-  const [confirmLocation, setConfirmLocation] = useState(null)
 
-  const { response: responseConfirm, error: errorConfirm } = useFetch(confirmLocation, "PUT", confirmPayload, token)
   const {
-    response: responseProductos,
+    items: pedidos,
+    loading: loadingPedidos,
+    error: errorPedidos,
+    confirming,
+    confirmError,
+  } = useSelector((state) => state.pedidos)
+
+  const {
+    productos,
     loading: loadingProductos,
     error: errorProductos,
-  } = useFetch("productos", "GET", null, null)
+  } = useSelector((state) => state.productos)
+
+  useEffect(() => {
+    if (token) {
+      dispatch(fetchPedidosUsuario(token))
+    }
+    dispatch(fetchProductos())
+  }, [dispatch, token])
+
+  useEffect(() => {
+    if (errorProductos) {
+      console.error("Error productos:", errorProductos)
+      alert("Error al correlacionar stock de productos: " + JSON.stringify(errorProductos))
+    }
+  }, [errorProductos])
+
+  useEffect(() => {
+    if (errorPedidos) {
+      console.error("Error pedidos:", errorPedidos)
+      alert("Error al cargar pedidos: " + JSON.stringify(errorPedidos))
+    }
+  }, [errorPedidos])
+
+  useEffect(() => {
+    if (confirmError) {
+      alert(`Error al confirmar el pedido: ${confirmError.message || "Error de servidor"}`)
+    }
+  }, [confirmError])
 
   const handleConfirmClick = (pedido) => setPedidoAConfirmar(pedido)
   const handleCloseModal = () => setPedidoAConfirmar(null)
+
+  const mapStockAndStateProductsById = useMemo(() => {
+    if (!Array.isArray(productos) || productos.length === 0) return {}
+
+    return productos.reduce((acc, producto) => {
+      if (producto?.id != null) {
+        acc[producto.id] = {
+          stock: producto.stock,
+          activo: producto.activo,
+        }
+      }
+      return acc
+    }, {})
+  }, [productos])
 
   const handleConfirmSubmit = (pedidoId, codigo, metodoPago, detalles) => {
     let exepcionFaltante = false
     let exepcionDescontinuado = false
 
-    detalles.map((item) => {
-      if (mapStockAndStateProductsById?.[item.productoId] == undefined) {
-        alert(`Momentaneamente no comercializamos el producto: ${item.nombreProducto}. Intente mas tarde.`)
+    if (!productos || productos.length === 0 || Object.keys(mapStockAndStateProductsById).length === 0) {
+      alert("Todavía estamos cargando el stock de productos. Intentá de nuevo en unos segundos.")
+      return
+    }
+
+    detalles.forEach((item) => {
+      const prod = mapStockAndStateProductsById?.[item.productoId]
+
+      if (!prod) {
+        alert(`Momentaneamente no comercializamos el producto: ${item.nombreProducto}. Intente más tarde.`)
         exepcionDescontinuado = true
+        return
       }
 
-      if (
-        !exepcionDescontinuado &&
-        (mapStockAndStateProductsById?.[item.productoId]?.stock ?? 0) - (item?.cantidad ?? 0) < 0
-      ) {
+      const stockRestante = (prod?.stock ?? 0) - (item?.cantidad ?? 0)
+
+      if (stockRestante < 0) {
         alert(
-          `Momentaneamente no contamos con stock de: ${item.cantidad} para el producto: ${item.nombreProducto}. Intente mas tarde.`,
+          `Momentaneamente no contamos con stock de: ${item.cantidad} para el producto: ${item.nombreProducto}. Intente más tarde.`,
         )
         exepcionFaltante = true
       }
@@ -59,62 +106,49 @@ export default function Pedidos() {
       return
     }
 
-    setConfirmLocation(`pedidos/${pedidoId}/confirmar`)
-    setConfirmPayload({
-      codigoDescuento: codigo,
-      metodoDePago: metodoPago,
+    dispatch(
+      confirmPedido({
+        pedidoId,
+        codigoDescuento: codigo,
+        metodoDePago: metodoPago,
+        token,
+      }),
+    )
+    .unwrap()
+    .then(() => {
+      alert("¡Pedido confirmado y facturado con éxito!")
+      handleCloseModal()
+      dispatch(fetchPedidosUsuario(token))
+    })
+    .catch((err) => {
+      alert(`Error al confirmar el pedido: ${err.message || "Error de servidor"}`)
     })
   }
 
-  useEffect(() => {
-    if (responseProductos && !loadingProductos) {
-      setProductos(responseProductos.content)
-    }
-  }, [responseProductos, loadingProductos])
 
-  useEffect(() => {
-    if (errorProductos && !loadingProductos) {
-      console.error(JSON.stringify(errorProductos))
-      alert("Error al correlacionar stock de productos: " + JSON.stringify(errorProductos))
-    }
-  }, [errorProductos, loadingProductos])
+  const pedidosPendientes = useMemo(
+    () => pedidos.filter((p) => p.estado === "PENDIENTE"),
+    [pedidos],
+  )
 
-  useEffect(() => {
-    if (responseConfirm) {
-      alert("¡Pedido confirmado y facturado con éxito!")
-      setPedidoAConfirmar(null)
-      setRefresh((prev) => !prev)
-    }
-    if (errorConfirm) {
-      alert(`Error al confirmar el pedido: ${errorConfirm.body?.message || "Error de servidor"}`)
-    }
-  }, [responseConfirm, errorConfirm])
-
-  const mapStockAndStateProductsById = useMemo(() => {
-    if (!Array.isArray(productos) || productos.length == 0) return
-    return productos.reduce((accumulator, producto) => {
-      if (producto?.id != null) {
-        accumulator[producto.id] = { stock: producto.stock, activo: producto.activo }
-        return accumulator
-      }
-    }, {})
-  }, [productos])
-
-  useEffect(() => {
-    if (responsePedidos) setPedidos(responsePedidos || [])
-  }, [responsePedidos])
-
-  const pedidosPendientes = useMemo(() => pedidos.filter((p) => p.estado === "PENDIENTE"), [pedidos])
-
-  const pedidosConfirmados = useMemo(() => pedidos.filter((p) => !(p.estado === "PENDIENTE")), [pedidos])
+  const pedidosConfirmados = useMemo(
+    () => pedidos.filter((p) => p.estado !== "PENDIENTE"),
+    [pedidos],
+  )
 
   if (loadingPedidos) return <div className="text-center py-10">Cargando pedidos...</div>
 
   return (
     <div className="container mx-auto py-10">
       {pedidoAConfirmar && (
-        <ConfirmationModal pedido={pedidoAConfirmar} onClose={handleCloseModal} onConfirm={handleConfirmSubmit} />
+        <ConfirmationModal
+          pedido={pedidoAConfirmar}
+          onClose={handleCloseModal}
+          onConfirm={handleConfirmSubmit}
+          loading={confirming}
+        />
       )}
+
       <h1 className="text-3xl font-bold mb-8">Mis Pedidos</h1>
 
       <div className="mb-12">
