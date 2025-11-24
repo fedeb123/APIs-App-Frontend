@@ -13,12 +13,13 @@ import { ProductModal } from "../components/ui/admin/ProductModal"
 import { OrderCard } from "../components/ui/admin/OrderCard"
 import { useDispatch, useSelector } from "react-redux"
 import { fetchCategorias, fetchCategoriasDescontinuadas, createCategorias, updateCategoria, deleteCategoria, reactivarCategoria} from "../features/categoriasSlice"
+import { fetchUsuarios } from "../features/usuariosSlice"
 
 export default function Admin() {
   const dispatch = useDispatch()
   const [activeTab, setActiveTab] = useState("usuarios")
   const [products, setProducts] = useState([])
-  const [users, setUsers] = useState([])
+  const { users, loading: loadingUsers } = useSelector((state) => state.usuarios)
   const [productosDesc, setProductosDesc] = useState([])
   const [pedidos, setPedidos] = useState([])
   const { token } = useAuth()
@@ -30,7 +31,6 @@ export default function Admin() {
   const { categorias, categoriasDesc} = useSelector((state)=>state.categorias)
   const { response: productsDiscontContent } = useFetch("productos/descontinuados", "GET", null, token, refresh)
   const { response: pedidosContent } = useFetch("pedidos", "GET", null, token, refresh)
-  const { response: usersContent } = useFetch("usuarios", "GET", null, token)
 
   const {
     response: apiResponse,
@@ -106,6 +106,7 @@ export default function Admin() {
   useEffect(()=>{
     dispatch(fetchCategorias())
     dispatch(fetchCategoriasDescontinuadas())
+    dispatch(fetchUsuarios())
   },[dispatch])
 
   useEffect(() => {
@@ -115,9 +116,6 @@ export default function Admin() {
   useEffect(() => {
     setPedidos(pedidosContent?.content ?? [])
   }, [pedidosContent])
-  useEffect(() => {
-    setUsers(usersContent?.content ?? [])
-  }, [usersContent])
 
   const handleSaveCategoria = () => {
     const nombre = categoriaForm.nombre.trim()
