@@ -3,13 +3,12 @@ import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Card } from "../components/ui/Card"
 import useFetch from "../hooks/useFetch"
-import useAuth from "../hooks/useAuth"
 import { ProductCard } from "../components/ui/tienda/ProductCard"
 import { CategorySidebar } from "../components/ui/tienda/CategorySidebar"
 import { ProductModal } from "../components/ui/tienda/ProductModal"
 
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchProductos } from "../features/productosSlice"
+import { fetchProductosStockeados } from "../features/productosSlice"
 import { fetchCategorias } from "../features/categoriasSlice"
 
 export default function Tienda() {
@@ -51,7 +50,7 @@ export default function Tienda() {
   }, [errorPost])
 
   useEffect(() => {
-    dispatch(fetchProductos())
+    dispatch(fetchProductosStockeados())
   }, [dispatch])
 
 

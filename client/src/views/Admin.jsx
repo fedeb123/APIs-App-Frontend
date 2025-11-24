@@ -14,24 +14,23 @@ import { OrderCard } from "../components/ui/admin/OrderCard"
 import { useDispatch, useSelector } from "react-redux"
 import { fetchCategorias, fetchCategoriasDescontinuadas, createCategorias, updateCategoria, deleteCategoria, reactivarCategoria} from "../features/categoriasSlice"
 import { fetchUsuarios } from "../features/usuariosSlice"
+import { fetchProductos, fetchProductosDescontinuados, createProducto, updateProducto, deleteProducto, reactivarProducto } from "../features/productosSlice"
 
 export default function Admin() {
   const dispatch = useDispatch()
-  const [activeTab, setActiveTab] = useState("usuarios")
-  const [products, setProducts] = useState([])
-  const { users, loading: loadingUsers } = useSelector((state) => state.usuarios)
-  const [productosDesc, setProductosDesc] = useState([])
-  const [pedidos, setPedidos] = useState([])
   const { token } = useAuth()
+  const [activeTab, setActiveTab] = useState("usuarios")
+  const { users, loading: loadingUsers } = useSelector((state) => state.usuarios)
+  const { productos, productosDescontinuados } = useSelector((state) => state.productos)
+
+  const [pedidos, setPedidos] = useState([])
   const [refresh, setRefresh] = useState(false)
+  const { response: pedidosContent } = useFetch("pedidos", "GET", null, token, refresh)
 
   const [apiConfig, setApiConfig] = useState({ location: null, method: null })
 
-  const { response: productsContent } = useFetch("productos", "GET", null, token, refresh)
   const { categorias, categoriasDesc} = useSelector((state)=>state.categorias)
-  const { response: productsDiscontContent } = useFetch("productos/descontinuados", "GET", null, token, refresh)
-  const { response: pedidosContent } = useFetch("pedidos", "GET", null, token, refresh)
-
+  
   const {
     response: apiResponse,
     loading: apiLoading,
@@ -99,19 +98,13 @@ export default function Admin() {
     }
   }, [apiLoading])
 
-  useEffect(() => {
-    setProducts(productsContent?.content ?? [])
-  }, [productsContent])
-
   useEffect(()=>{
     dispatch(fetchCategorias())
     dispatch(fetchCategoriasDescontinuadas())
     dispatch(fetchUsuarios())
+    dispatch(fetchProductos())
+    dispatch(fetchProductosDescontinuados())
   },[dispatch])
-
-  useEffect(() => {
-    setProductosDesc(productsDiscontContent?.content ?? [])
-  }, [productsDiscontContent])
 
   useEffect(() => {
     setPedidos(pedidosContent?.content ?? [])
@@ -188,6 +181,12 @@ export default function Admin() {
       formData.append("imagen", productoForm.imagenFile)
     }
 
+    if (editingProducto) {
+      dispatch(updateProducto({ id: editingProducto.id, payload: formData }))
+    } else {
+      dispatch(createProducto(formData))
+    }
+
     setApiConfig({
       location: editingProducto ? `productos/${editingProducto.id}` : `productos`,
       method: editingProducto ? "PUT" : "POST",
@@ -216,7 +215,7 @@ export default function Admin() {
 
   const handleDeleteProducto = (id) => {
     if (window.confirm("¿Seguro que quieres eliminar este producto?")) {
-      setApiConfig({ location: `productos/${id}`, method: "DELETE", payload: null })
+      dispatch(deleteProducto(id))
     }
   }
 
@@ -228,7 +227,7 @@ export default function Admin() {
 
   const handleReactivarProducto = (id) => {
     if (window.confirm("¿Reactivar este producto?")) {
-      setApiConfig({ location: `productos/descontinuados/reactivar/${id}`, method: "PUT", payload: {} })
+      dispatch(reactivarProducto(id))
     }
   }
 
@@ -248,7 +247,7 @@ export default function Admin() {
           <TabButton active={activeTab === "categories"} onClick={() => setActiveTab("categories")} icon={Tag}>
             Categorías
           </TabButton>
-          <TabButton active={activeTab === "products"} onClick={() => setActiveTab("products")} icon={Package}>
+          <TabButton active={activeTab === "productos"} onClick={() => setActiveTab("productos")} icon={Package}>
             Productos
           </TabButton>
           <TabButton active={activeTab === "pedidos"} onClick={() => setActiveTab("pedidos")} icon={ShoppingBag}>
@@ -273,6 +272,7 @@ export default function Admin() {
         {activeTab === "usuarios" && (
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Listado de Usuarios</h2>
+            {loadingUsers && <p>Cargando...</p>}
             <div className="grid gap-6">
               {users?.length ? (
                 users.map((u) => <UserCard key={u.id} user={u} />)
@@ -310,7 +310,7 @@ export default function Admin() {
           </div>
         )}
 
-        {activeTab === "products" && (
+        {activeTab === "productos" && (
           <div>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900">Gestión de Productos</h2>
@@ -325,7 +325,7 @@ export default function Admin() {
               </Button>
             </div>
             <div className="grid gap-4">
-              {products.map((producto) => (
+              {productos.map((producto) => (
                 <ProductCard
                   key={producto.id}
                   producto={producto}
@@ -341,7 +341,7 @@ export default function Admin() {
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Gestión de Productos Descontinuados</h2>
             <div className="grid gap-4">
-              {productosDesc.map((producto) => (
+              {productosDescontinuados.map((producto) => (
                 <ProductCard
                   key={producto.id}
                   producto={producto}
