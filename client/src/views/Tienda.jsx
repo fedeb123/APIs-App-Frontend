@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Card } from "../components/ui/Card"
@@ -9,6 +10,7 @@ import { ProductModal } from "../components/ui/tienda/ProductModal"
 
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchProductos } from "../features/productosSlice"
+import { fetchCategorias } from "../features/categoriasSlice"
 
 export default function Tienda() {
   const [search, setSearch] = useState("")
@@ -16,7 +18,6 @@ export default function Tienda() {
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [productosComprados, setProductosComprados] = useState([])
   const [filter, setFilter] = useState("todos")
-  const [categories, setCategories] = useState([])
   const [filteredProducts, setFilteredProducts] = useState([])
   const [user, setUser] = useState(null)
   const [quantity, setQuantity] = useState(1)
@@ -27,11 +28,11 @@ export default function Tienda() {
   const dispatch = useDispatch()
 
   const { productos: products, loading: loadingProducts, error: errorProducts } = useSelector((state) => state.productos)
-  const { response: categoriesContent, loading: loadingCategories, error: errorCategories } = useFetch("categorias", "GET")
+  const { categorias: categoriesContent, loading: loadingCategories, error: errorCategories } = useSelector((state)=> state.categorias)
   const { response: responsePost, loading: loadingPost, error: errorPost } = useFetch("pedidos", "POST", payload, token)
 
   useEffect(() => {
-    if (products && categories) {
+    if (products && categoriesContent) {
       //console.log(products)
       setFilteredProducts(
         products.filter((p) => {
@@ -41,7 +42,7 @@ export default function Tienda() {
         }),
       )
     }
-  }, [categories, products, search, filter])
+  }, [categoriesContent, products, search, filter])
 
   useEffect(() => {
     if (errorPost) {
@@ -53,10 +54,11 @@ export default function Tienda() {
     dispatch(fetchProductos())
   }, [dispatch])
 
-  useEffect(() => {
-    setCategories(categoriesContent?.content ?? [])
-  }, [categoriesContent])
 
+  useEffect(()=>{
+    dispatch(fetchCategorias())
+  },[dispatch])
+  
   useEffect(() => {
     if (responseUser && !loadingProfile) {
       setUser(responseUser)
@@ -129,7 +131,7 @@ export default function Tienda() {
         <div className="flex flex-col gap-6 lg:flex-row">
           <aside className="lg:w-64 shrink-0">
             <CategorySidebar
-              categories={categories}
+              categories={categoriesContent}
               filter={filter}
               onFilterChange={setFilter}
               search={search}

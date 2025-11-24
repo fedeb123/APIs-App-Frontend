@@ -11,14 +11,15 @@ import { ProductCard } from "../components/ui/admin/ProductCard"
 import { CategoryModal } from "../components/ui/admin/CategoryModal"
 import { ProductModal } from "../components/ui/admin/ProductModal"
 import { OrderCard } from "../components/ui/admin/OrderCard"
+import { useDispatch, useSelector } from "react-redux"
+import { fetchCategorias, fetchCategoriasDescontinuadas, createCategorias, updateCategoria, deleteCategoria, reactivarCategoria} from "../features/categoriasSlice"
 
 export default function Admin() {
+  const dispatch = useDispatch()
   const [activeTab, setActiveTab] = useState("usuarios")
-  const [categories, setCategories] = useState([])
   const [products, setProducts] = useState([])
   const [users, setUsers] = useState([])
   const [productosDesc, setProductosDesc] = useState([])
-  const [categoriasDesc, setCategoriasDesc] = useState([])
   const [pedidos, setPedidos] = useState([])
   const { token } = useAuth()
   const [refresh, setRefresh] = useState(false)
@@ -26,9 +27,8 @@ export default function Admin() {
   const [apiConfig, setApiConfig] = useState({ location: null, method: null })
 
   const { response: productsContent } = useFetch("productos", "GET", null, token, refresh)
-  const { response: categoriesContent } = useFetch("categorias", "GET", null, token, refresh)
+  const { categorias, categoriasDesc} = useSelector((state)=>state.categorias)
   const { response: productsDiscontContent } = useFetch("productos/descontinuados", "GET", null, token, refresh)
-  const { response: categoriesDiscontContent } = useFetch("categorias/descontinuadas", "GET", null, token, refresh)
   const { response: pedidosContent } = useFetch("pedidos", "GET", null, token, refresh)
   const { response: usersContent } = useFetch("usuarios", "GET", null, token)
 
@@ -102,15 +102,16 @@ export default function Admin() {
   useEffect(() => {
     setProducts(productsContent?.content ?? [])
   }, [productsContent])
-  useEffect(() => {
-    setCategories(categoriesContent?.content ?? [])
-  }, [categoriesContent])
+
+  useEffect(()=>{
+    dispatch(fetchCategorias())
+    dispatch(fetchCategoriasDescontinuadas())
+  },[dispatch])
+
   useEffect(() => {
     setProductosDesc(productsDiscontContent?.content ?? [])
   }, [productsDiscontContent])
-  useEffect(() => {
-    setCategoriasDesc(categoriesDiscontContent?.content ?? [])
-  }, [categoriesDiscontContent])
+
   useEffect(() => {
     setPedidos(pedidosContent?.content ?? [])
   }, [pedidosContent])
@@ -119,29 +120,50 @@ export default function Admin() {
   }, [usersContent])
 
   const handleSaveCategoria = () => {
-    const nombreActual = editingCategoria?.nombreCategoria ?? ""
-    const descripcionActual = editingCategoria?.descripcion ?? ""
-    const nombreNuevo = (categoriaForm.nombre ?? "").trim()
-    const descripcionNueva = (categoriaForm.descripcion ?? "").trim()
+    const nombre = categoriaForm.nombre.trim()
+    const descripcion = categoriaForm.descripcion.trim()
 
     if (editingCategoria) {
-      const payload = {}
-      if (nombreNuevo && nombreNuevo !== nombreActual) {
-        payload.nombreCategoria = nombreNuevo
-      }
-      if (descripcionNueva !== descripcionActual) {
-        payload.descripcion = descripcionNueva
-      }
-      if (Object.keys(payload).length === 0) {
-        alert("No hay cambios para guardar.")
-        return
-      }
-      setApiConfig({ location: `categorias/${editingCategoria.id}`, method: "PUT", payload })
+      // update
+      dispatch(updateCategoria({
+        id: editingCategoria.id,
+        payload: { nombreCategoria: nombre, descripcion: descripcion }
+      }))
     } else {
-      const payload = { nombreCategoria: nombreNuevo, descripcion: descripcionNueva }
-      setApiConfig({ location: "categorias", method: "POST", payload })
+      // create
+      dispatch(createCategorias({
+        nombreCategoria: nombre,
+        descripcion: descripcion
+      }))
     }
+
+    setShowCategoriaModal(false)
   }
+
+  // const handleSaveCategoria = () => {
+  //   const nombreActual = editingCategoria?.nombreCategoria ?? ""
+  //   const descripcionActual = editingCategoria?.descripcion ?? ""
+  //   const nombreNuevo = (categoriaForm.nombre ?? "").trim()
+  //   const descripcionNueva = (categoriaForm.descripcion ?? "").trim()
+
+  //   if (editingCategoria) {
+  //     const payload = {}
+  //     if (nombreNuevo && nombreNuevo !== nombreActual) {
+  //       payload.nombreCategoria = nombreNuevo
+  //     }
+  //     if (descripcionNueva !== descripcionActual) {
+  //       payload.descripcion = descripcionNueva
+  //     }
+  //     if (Object.keys(payload).length === 0) {
+  //       alert("No hay cambios para guardar.")
+  //       return
+  //     }
+  //     setApiConfig({ location: `categorias/${editingCategoria.id}`, method: "PUT", payload })
+  //   } else {
+  //     const payload = { nombreCategoria: nombreNuevo, descripcion: descripcionNueva }
+  //     setApiConfig({ location: "categorias", method: "POST", payload })
+  //   }
+  // }
 
   const handleEditCategoria = (categoria) => {
     setEditingCategoria(categoria)
@@ -151,7 +173,7 @@ export default function Admin() {
 
   const handleDeleteCategoria = (id) => {
     if (window.confirm("¿Seguro que quieres eliminar esta categoría?")) {
-      setApiConfig({ location: `categorias/${id}`, method: "DELETE", payload: null })
+      dispatch(deleteCategoria(id))
     }
   }
 
@@ -202,7 +224,7 @@ export default function Admin() {
 
   const handleReactivarCategoria = (id) => {
     if (window.confirm("¿Reactivar esta categoría?")) {
-      setApiConfig({ location: `categorias/descontinuadas/reactivar/${id}`, method: "PUT", payload: {} })
+      dispatch(reactivarCategoria(id))
     }
   }
 
@@ -278,7 +300,7 @@ export default function Admin() {
               </Button>
             </div>
             <div className="grid gap-4">
-              {categories.map((categoria) => (
+              {categorias.map((categoria) => (
                 <CategoryCard
                   key={categoria.id}
                   categoria={categoria}
@@ -417,7 +439,7 @@ export default function Admin() {
         show={showProductoModal}
         editing={editingProducto}
         form={productoForm}
-        categories={categories}
+        categories={categorias}
         onChange={setProductoForm}
         onSave={handleSaveProducto}
         onClose={() => {
