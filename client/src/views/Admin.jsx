@@ -230,8 +230,8 @@ export default function Admin() {
     }
   }
 
-  const handleUpdateEstadoPedido = (id) => {
-    dispatch(enviarPedido({ pedidoId }))
+  const handleUpdateEstadoPedido = (pedidoId) => {
+    dispatch(enviarPedido({pedidoId}))
   }
 
   return (
