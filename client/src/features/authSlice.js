@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
 import requester from "./interceptor/axios";
+import { persistor } from "./store";
 
 const apiUrl = import.meta.env.VITE_APP_API_URL;
 const registerUrl = `${apiUrl}/v1/auth/register`
@@ -8,7 +9,7 @@ const userUrl = `${apiUrl}/usuarios/usuario`
 
 const initialState = {
     user: null,
-    token: localStorage.getItem('jwtToken') ? localStorage.getItem('jwtToken') : null,
+    token: null,
     loading: false,
     error: null
 }
@@ -29,8 +30,11 @@ export const fetchUser = createAsyncThunk('auth/user', async() => {
 })
 
 export const logoutAndClear = () => (dispatch) => {
-  localStorage.removeItem("user");
-  localStorage.removeItem("jwtToken");
+  if (persistor) {
+    persistor.purge
+  } else {
+    localStorage.removeItem("persist:root");
+  }  
   dispatch(logout());
 }
 
@@ -55,7 +59,6 @@ const authSlice = createSlice({
         .addCase(registerUser.fulfilled, (state, action) => {
             state.loading = false;
             state.token = action.payload.accessToken;
-            localStorage.setItem('jwtToken', action.payload.accessToken);
         })
         .addCase(loginUser.pending, (state) => {
             state.loading = true;
@@ -67,8 +70,7 @@ const authSlice = createSlice({
         })
         .addCase(loginUser.fulfilled, (state, action) => {
             state.loading = false;
-            state.token = action.payload.accessToken;
-            localStorage.setItem('jwtToken', action.payload.accessToken);
+            state.token = action.payload.accessToken;;
         })
         .addCase(fetchUser.pending, (state) => {
             state.loading = true;
@@ -81,7 +83,6 @@ const authSlice = createSlice({
         .addCase(fetchUser.fulfilled, (state, action) => {
             state.loading = false;
             state.user = action.payload;
-            localStorage.setItem('user', JSON.stringify(action.payload))
         })
     }
 })
