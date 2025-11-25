@@ -2,8 +2,6 @@ import { useEffect, useState, useMemo } from "react"
 import { Users, Tag, Package, ShoppingBag } from "lucide-react"
 import { Button } from "../components/ui/Button"
 import { Input } from "../components/ui/Input"
-import useFetch from "../hooks/useFetch"
-import useAuth from "../hooks/useAuth"
 import { TabButton } from "../components/ui/admin/TabButton"
 import { UserCard } from "../components/ui/admin/UserCard"
 import { CategoryCard } from "../components/ui/admin/CategoryCard"
@@ -11,41 +9,23 @@ import { ProductCard } from "../components/ui/admin/ProductCard"
 import { CategoryModal } from "../components/ui/admin/CategoryModal"
 import { ProductModal } from "../components/ui/admin/ProductModal"
 import { OrderCard } from "../components/ui/admin/OrderCard"
+
+//REDUX
 import { useDispatch, useSelector } from "react-redux"
 import { fetchCategorias, fetchCategoriasDescontinuadas, createCategorias, updateCategoria, deleteCategoria, reactivarCategoria} from "../features/categoriasSlice"
 import { fetchPedidosAdmin, enviarPedido } from "../features/pedidosSlice"
-
 import { fetchUsuarios } from "../features/usuariosSlice"
 import { fetchProductos, fetchProductosDescontinuados, createProducto, updateProducto, deleteProducto, reactivarProducto } from "../features/productosSlice"
 
 export default function Admin() {
   const dispatch = useDispatch()
-  const { token } = useAuth()
   const [activeTab, setActiveTab] = useState("usuarios")
   const { users, loading: loadingUsers } = useSelector((state) => state.usuarios)
   const { productos, productosDescontinuados } = useSelector((state) => state.productos)
 
-  const [refresh, setRefresh] = useState(false)
-
-  const [apiConfig, setApiConfig] = useState({ location: null, method: null })
-
   const { categorias, categoriasDesc} = useSelector((state)=>state.categorias)
-  const { response: productsDiscontContent } = useFetch("productos/descontinuados", "GET", null, token, refresh)
-  //const { response: categoriesDiscontContent } = useFetch("categorias/descontinuadas", "GET", null, token, refresh)
-  //const { response: pedidosContent } = useFetch("pedidos", "GET", null, token, refresh)
-  const {
-    items: pedidos,
-    loading: loadingPedidos,
-    error: errorPedidos,
-  } = useSelector((state) => state.pedidos)
 
-  const { response: usersContent } = useFetch("usuarios", "GET", null, token)
-
-  const {
-    response: apiResponse,
-    loading: apiLoading,
-    error: apiError,
-  } = useFetch(apiConfig.location, apiConfig.method, apiConfig.payload, token)
+  const { items: pedidos, loading: loadingPedidos, error: errorPedidos } = useSelector((state) => state.pedidos)
 
   const [showCategoriaModal, setShowCategoriaModal] = useState(false)
   const [showProductoModal, setShowProductoModal] = useState(false)
@@ -86,28 +66,6 @@ export default function Admin() {
     })
   }, [pedidos, pedidoSearch, pedidoEstado, mapUsersById])
 
-  useEffect(() => {
-    if (!apiLoading) {
-      if (apiResponse) {
-        const successMsg =
-          (typeof apiResponse === "string" && apiResponse) || apiResponse?.message || "Operación realizada con éxito!"
-        alert(successMsg)
-        setRefresh((prev) => !prev)
-        setShowCategoriaModal(false)
-        setShowProductoModal(false)
-      }
-      if (apiError) {
-        console.error("Error completo de la API:", apiError)
-        const errorMsg =
-          (typeof apiError.body === "string" && apiError.body) ||
-          apiError.body?.message ||
-          apiError.statusText ||
-          `Error ${apiError.status}`
-        alert(`Error al realizar la operación: ${errorMsg}`)
-      }
-    }
-  }, [apiLoading])
-
   useEffect(()=>{
     dispatch(fetchCategorias())
     dispatch(fetchCategoriasDescontinuadas())
@@ -115,20 +73,12 @@ export default function Admin() {
     dispatch(fetchProductos())
     dispatch(fetchProductosDescontinuados())
   },[dispatch])
-
-  // useEffect(() => {
-  //   setPedidos(pedidosContent?.content ?? [])
-  // }, [pedidosContent])
   
   useEffect(() => {
-    if (token && activeTab === "pedidos") {
+    if (activeTab === "pedidos") {
       dispatch(fetchPedidosAdmin())
     }
-  }, [dispatch, token, activeTab, refresh])
-  
-  useEffect(() => {
-    setUsers(usersContent?.content ?? [])
-  }, [usersContent])
+  }, [dispatch, activeTab])
 
   const handleSaveCategoria = () => {
     const nombre = categoriaForm.nombre.trim()
