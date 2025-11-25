@@ -1,27 +1,24 @@
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { Card } from "./ui/Card"
-import useFetch from "../hooks/useFetch"
+import { useDispatch, useSelector } from "react-redux"
+import { fetchProductosStockeados } from "../features/productosSlice"
 
 const imagesUrl  = import.meta.env.VITE_APP_API_IMAGES_URL
 
-
 export function ProductoSeccion() {
+  const dispatch = useDispatch()
 
-const [products, setProducts] = useState([])
-const { response: productsContent, loading, error } = useFetch('productos/stockeados', 'GET')
+  const { productos: products, loading, error } = useSelector((state) => (state.productos))
 
+  useEffect(() => {
+    if (error) {
+      alert(`Ha ocurrido un error: ${error}`)
+    }
+  }, [error])
 
-useEffect(() => {
-  if (productsContent) {
-    setProducts(productsContent?.content ?? [])
-  }
-}, [productsContent])
-
-useEffect(() => {
-  if (error) {
-    alert(`Ha ocurrido un error: ${error}`)
-  }
-}, [error])
+  useEffect(()=>{
+    dispatch(fetchProductosStockeados)
+  },[dispatch])
 
   return (
     <section className="container mx-auto px-4 py-12 md:px-6 md:py-16">
