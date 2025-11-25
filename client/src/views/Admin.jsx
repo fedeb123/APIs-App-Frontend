@@ -2,8 +2,6 @@ import { useEffect, useState, useMemo } from "react"
 import { Users, Tag, Package, ShoppingBag } from "lucide-react"
 import { Button } from "../components/ui/Button"
 import { Input } from "../components/ui/Input"
-import useFetch from "../hooks/useFetch"
-import useAuth from "../hooks/useAuth"
 import { TabButton } from "../components/ui/admin/TabButton"
 import { UserCard } from "../components/ui/admin/UserCard"
 import { CategoryCard } from "../components/ui/admin/CategoryCard"
@@ -11,42 +9,23 @@ import { ProductCard } from "../components/ui/admin/ProductCard"
 import { CategoryModal } from "../components/ui/admin/CategoryModal"
 import { ProductModal } from "../components/ui/admin/ProductModal"
 import { OrderCard } from "../components/ui/admin/OrderCard"
+
+//REDUX
 import { useDispatch, useSelector } from "react-redux"
 import { fetchCategorias, fetchCategoriasDescontinuadas, createCategorias, updateCategoria, deleteCategoria, reactivarCategoria} from "../features/categoriasSlice"
 import { fetchPedidosAdmin, enviarPedido } from "../features/pedidosSlice"
-
+import { fetchUsuarios } from "../features/usuariosSlice"
+import { fetchProductos, fetchProductosDescontinuados, createProducto, updateProducto, deleteProducto, reactivarProducto } from "../features/productosSlice"
 
 export default function Admin() {
   const dispatch = useDispatch()
   const [activeTab, setActiveTab] = useState("usuarios")
-  const [products, setProducts] = useState([])
-  const [users, setUsers] = useState([])
-  const [productosDesc, setProductosDesc] = useState([])
-  //const [categoriasDesc, setCategoriasDesc] = useState([])
-  //const [pedidos, setPedidos] = useState([])
-  const { token } = useAuth()
-  const [refresh, setRefresh] = useState(false)
+  const { users, loading: loadingUsers } = useSelector((state) => state.usuarios)
+  const { productos, productosDescontinuados } = useSelector((state) => state.productos)
 
-  const [apiConfig, setApiConfig] = useState({ location: null, method: null })
-
-  const { response: productsContent } = useFetch("productos", "GET", null, token, refresh)
   const { categorias, categoriasDesc} = useSelector((state)=>state.categorias)
-  const { response: productsDiscontContent } = useFetch("productos/descontinuados", "GET", null, token, refresh)
-  //const { response: categoriesDiscontContent } = useFetch("categorias/descontinuadas", "GET", null, token, refresh)
-  //const { response: pedidosContent } = useFetch("pedidos", "GET", null, token, refresh)
-  const {
-    items: pedidos,
-    loading: loadingPedidos,
-    error: errorPedidos,
-  } = useSelector((state) => state.pedidos)
 
-  const { response: usersContent } = useFetch("usuarios", "GET", null, token)
-
-  const {
-    response: apiResponse,
-    loading: apiLoading,
-    error: apiError,
-  } = useFetch(apiConfig.location, apiConfig.method, apiConfig.payload, token)
+  const { items: pedidos, loading: loadingPedidos, error: errorPedidos } = useSelector((state) => state.pedidos)
 
   const [showCategoriaModal, setShowCategoriaModal] = useState(false)
   const [showProductoModal, setShowProductoModal] = useState(false)
@@ -87,54 +66,19 @@ export default function Admin() {
     })
   }, [pedidos, pedidoSearch, pedidoEstado, mapUsersById])
 
-  useEffect(() => {
-    if (!apiLoading) {
-      if (apiResponse) {
-        const successMsg =
-          (typeof apiResponse === "string" && apiResponse) || apiResponse?.message || "Operación realizada con éxito!"
-        alert(successMsg)
-        setRefresh((prev) => !prev)
-        setShowCategoriaModal(false)
-        setShowProductoModal(false)
-      }
-      if (apiError) {
-        console.error("Error completo de la API:", apiError)
-        const errorMsg =
-          (typeof apiError.body === "string" && apiError.body) ||
-          apiError.body?.message ||
-          apiError.statusText ||
-          `Error ${apiError.status}`
-        alert(`Error al realizar la operación: ${errorMsg}`)
-      }
-    }
-  }, [apiLoading])
-
-  useEffect(() => {
-    setProducts(productsContent?.content ?? [])
-  }, [productsContent])
-
   useEffect(()=>{
     dispatch(fetchCategorias())
     dispatch(fetchCategoriasDescontinuadas())
+    dispatch(fetchUsuarios())
+    dispatch(fetchProductos())
+    dispatch(fetchProductosDescontinuados())
   },[dispatch])
-
-  useEffect(() => {
-    setProductosDesc(productsDiscontContent?.content ?? [])
-  }, [productsDiscontContent])
-
-  // useEffect(() => {
-  //   setPedidos(pedidosContent?.content ?? [])
-  // }, [pedidosContent])
   
   useEffect(() => {
-    if (token && activeTab === "pedidos") {
+    if (activeTab === "pedidos") {
       dispatch(fetchPedidosAdmin())
     }
-  }, [dispatch, token, activeTab, refresh])
-  
-  useEffect(() => {
-    setUsers(usersContent?.content ?? [])
-  }, [usersContent])
+  }, [dispatch, activeTab])
 
   const handleSaveCategoria = () => {
     const nombre = categoriaForm.nombre.trim()
@@ -207,6 +151,12 @@ export default function Admin() {
       formData.append("imagen", productoForm.imagenFile)
     }
 
+    if (editingProducto) {
+      dispatch(updateProducto({ id: editingProducto.id, payload: formData }))
+    } else {
+      dispatch(createProducto(formData))
+    }
+
     setApiConfig({
       location: editingProducto ? `productos/${editingProducto.id}` : `productos`,
       method: editingProducto ? "PUT" : "POST",
@@ -235,7 +185,7 @@ export default function Admin() {
 
   const handleDeleteProducto = (id) => {
     if (window.confirm("¿Seguro que quieres eliminar este producto?")) {
-      setApiConfig({ location: `productos/${id}`, method: "DELETE", payload: null })
+      dispatch(deleteProducto(id))
     }
   }
 
@@ -247,7 +197,7 @@ export default function Admin() {
 
   const handleReactivarProducto = (id) => {
     if (window.confirm("¿Reactivar este producto?")) {
-      setApiConfig({ location: `productos/descontinuados/reactivar/${id}`, method: "PUT", payload: {} })
+      dispatch(reactivarProducto(id))
     }
   }
 
@@ -267,7 +217,7 @@ export default function Admin() {
           <TabButton active={activeTab === "categories"} onClick={() => setActiveTab("categories")} icon={Tag}>
             Categorías
           </TabButton>
-          <TabButton active={activeTab === "products"} onClick={() => setActiveTab("products")} icon={Package}>
+          <TabButton active={activeTab === "productos"} onClick={() => setActiveTab("productos")} icon={Package}>
             Productos
           </TabButton>
           <TabButton active={activeTab === "pedidos"} onClick={() => setActiveTab("pedidos")} icon={ShoppingBag}>
@@ -292,6 +242,7 @@ export default function Admin() {
         {activeTab === "usuarios" && (
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Listado de Usuarios</h2>
+            {loadingUsers && <p>Cargando...</p>}
             <div className="grid gap-6">
               {users?.length ? (
                 users.map((u) => <UserCard key={u.id} user={u} />)
@@ -329,7 +280,7 @@ export default function Admin() {
           </div>
         )}
 
-        {activeTab === "products" && (
+        {activeTab === "productos" && (
           <div>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900">Gestión de Productos</h2>
@@ -344,7 +295,7 @@ export default function Admin() {
               </Button>
             </div>
             <div className="grid gap-4">
-              {products.map((producto) => (
+              {productos.map((producto) => (
                 <ProductCard
                   key={producto.id}
                   producto={producto}
@@ -360,7 +311,7 @@ export default function Admin() {
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Gestión de Productos Descontinuados</h2>
             <div className="grid gap-4">
-              {productosDesc.map((producto) => (
+              {productosDescontinuados.map((producto) => (
                 <ProductCard
                   key={producto.id}
                   producto={producto}
