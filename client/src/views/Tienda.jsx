@@ -118,7 +118,7 @@ export default function Tienda() {
   useEffect(() => {
     if (!loadingPost && responsePost) {
       alert("Gracias por Tu Compra!")
-      navigate("/pedidos")
+      closeModal()
     }
   }, [responsePost, loadingPost])
 
