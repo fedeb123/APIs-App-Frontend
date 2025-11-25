@@ -17,7 +17,7 @@ export function ProductoSeccion() {
   }, [error])
 
   useEffect(()=>{
-    dispatch(fetchProductosStockeados)
+    dispatch(fetchProductosStockeados())
   },[dispatch])
 
   return (
