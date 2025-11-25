@@ -4,8 +4,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "../components/ui/Card"
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { User, Mail, Lock, Phone } from "lucide-react"; // Importa el ícono del teléfono
-import useFetch from "../hooks/useFetch";
-import useAuth from "../hooks/useAuth";
+// import useFetch from "../hooks/useFetch";
+// import useAuth from "../hooks/useAuth";
 
 function formReducer(state, action) {
   if (action.type === 'UPDATE_FIELD') {

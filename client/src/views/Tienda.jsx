@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Card } from "../components/ui/Card"
-import useFetch from "../hooks/useFetch"
 import { ProductCard } from "../components/ui/tienda/ProductCard"
 import { CategorySidebar } from "../components/ui/tienda/CategorySidebar"
 import { ProductModal } from "../components/ui/tienda/ProductModal"
