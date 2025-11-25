@@ -1,7 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit'
 
 //Persistence
-import { persistStore, persistReducer } from 'redux-persist'
+import { persistStore, persistReducer, PURGE } from 'redux-persist'
 import storage from "redux-persist/lib/storage"
 import autoMergeLevel2 from "redux-persist/lib/stateReconciler/autoMergeLevel2";
 
@@ -19,26 +19,24 @@ const persistConfig = {
     whitelist: ["auth"]
 }
 
-const rootReducer = {
-    productos: productosReducer,
-    auth: authReducer,
-    categorias: categoriasReducer,
-    pedidos: pedidosReducer,
-    usuarios: usuariosReducer
-}
-
-const persistedReducer = persistReducer(persistConfig, (state, action) => {
-    return state;
-})
+const authPersistedReducer = persistReducer(persistConfig, authReducer)
 
 const store = configureStore({
     reducer: {
         productos: productosReducer,
-        auth: authReducer,
+        auth: authPersistedReducer,
         categorias: categoriasReducer,
         pedidos: pedidosReducer,
         usuarios: usuariosReducer
-    }
+    },
+    //Ignorar warning de usar PURGE en authSlice
+    //https://redux-toolkit.js.org/usage/usage-guide#working-with-non-serializable-data
+    middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: [PURGE],
+      },
+    }),
 });
 
 export const persistor = persistStore(store)

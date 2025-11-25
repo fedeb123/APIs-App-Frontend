@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
 import requester from "./interceptor/axios";
-import { persistor } from "./store";
+import { PURGE } from "redux-persist";
 
 const apiUrl = import.meta.env.VITE_APP_API_URL;
 const registerUrl = `${apiUrl}/v1/auth/register`
@@ -30,12 +30,7 @@ export const fetchUser = createAsyncThunk('auth/user', async() => {
 })
 
 export const logoutAndClear = () => (dispatch) => {
-  if (persistor) {
-    persistor.purge
-  } else {
-    localStorage.removeItem("persist:root");
-  }  
-  dispatch(logout());
+  dispatch({ type: PURGE })
 }
 
 const authSlice = createSlice({
