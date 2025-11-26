@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext.jsx'
 import { CartProvider } from './context/CartContext.jsx'
 import { Provider } from 'react-redux'
 import './global.css'
@@ -12,13 +13,13 @@ import Loading from './views/Loading.jsx'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Provider store={store}>
-      <PersistGate loading={<Loading />} persistor={persistor}>
-        <BrowserRouter>
+      <BrowserRouter>
+        <AuthProvider>
           <CartProvider>
             <App/>
           </CartProvider>
-        </BrowserRouter>
-      </PersistGate>
+        </AuthProvider>
+      </BrowserRouter>
     </Provider>
   </StrictMode>
 )

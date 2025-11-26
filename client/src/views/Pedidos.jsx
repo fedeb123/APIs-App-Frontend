@@ -125,6 +125,35 @@ export default function Pedidos() {
         metodoDePago: metodoPago,
       }),
     )
+  useEffect(() => {
+    const cartFromState = location.state?.cart
+    
+    if (cartFromState && cartFromState.length > 0 && user) {
+      const data = {
+        clienteId: user.id,
+        detalles: cartFromState.map(item => ({
+          productoId: item.id,
+          cantidad: item.cantidad,
+        })),
+      }
+      setCartPayload(data)
+    }
+  }, [location.state, user])
+
+  useEffect(() => {
+    if (!loadingCartOrder && responseCartOrder) {
+      alert("Pedido creado! Ahora confírmalo para finalizarlo.")
+      clearCart()
+      setCartPayload(null)
+      setRefresh((prev) => !prev)
+      navigate("/pedidos", { replace: true, state: {} })
+    }
+    if (errorCartOrder) {
+      alert(`Error al crear el pedido: ${errorCartOrder.body?.message || "Error de servidor"}`)
+      setCartPayload(null)
+    }
+  }, [responseCartOrder, loadingCartOrder, errorCartOrder, clearCart, navigate])
+
     .unwrap()
     .then(() => {
       alert("¡Pedido confirmado y facturado con éxito!")
