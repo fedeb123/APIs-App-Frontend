@@ -5,31 +5,28 @@ import { Card } from "../components/ui/Card"
 import { ProductCard } from "../components/ui/tienda/ProductCard"
 import { CategorySidebar } from "../components/ui/tienda/CategorySidebar"
 import { ProductModal } from "../components/ui/tienda/ProductModal"
-
 import { useDispatch, useSelector } from 'react-redux'
-import { createProducto, fetchProductosStockeados } from "../features/productosSlice"
+import { fetchProductosStockeados } from "../features/productosSlice"
 import { fetchCategorias } from "../features/categoriasSlice"
-import { createPedido } from "../features/pedidosSlice"
-
+import { addToCart } from "../features/cartSlice"
 
 export default function Tienda() {
   const [search, setSearch] = useState("")
   const [showModal, setShowModal] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null)
-  const [productosComprados, setProductosComprados] = useState([])
+
   const [filter, setFilter] = useState("todos")
   const [filteredProducts, setFilteredProducts] = useState([])
   const [user, setUser] = useState(null)
   const [quantity, setQuantity] = useState(1)
-  const [payload, setPayload] = useState(null)
 
   const { user: responseUser, loadingProfile, token } = useSelector((state) => state.auth)
+
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
   const { productos: products, loading: loadingProducts, error: errorProducts } = useSelector((state) => state.productos)
   const { categorias: categoriesContent, loading: loadingCategories, error: errorCategories } = useSelector((state)=> state.categorias)
-  const {creating: creatingPedido, createError} = useSelector((state)=>state.pedidos)
   
   useEffect(() => {
     if (products && categoriesContent) {
@@ -67,7 +64,7 @@ export default function Tienda() {
 
   const handleAgregarProducto = (product) => {
     if (!user || !token) {
-      alert("Tienes que estar logueado para comprar, obviamente")
+      alert("Tienes que estar logueado para comprar")
       navigate("/login")
       return
     }
@@ -95,25 +92,10 @@ export default function Tienda() {
       return
     }
 
-    if(!selectedProduct) return
-
-    setProductosComprados([...productosComprados, {...selectedProduct, cantidad: quantity}])
-
-    const data = {
-      clienteId: user.id,
-      detalles: [
-        {
-          productoId: selectedProduct.id,
-          cantidad: quantity,
-        },
-      ],
-    }
-
-    dispatch(createPedido(data))
+    dispatch(addToCart({producto: selectedProduct, cantidad: quantity}))
     closeModal()
-
+    alert(`${selectedProduct.nombre} agregado al carrito`)
   }
-
 
   return (
     <div className="min-h-screen">

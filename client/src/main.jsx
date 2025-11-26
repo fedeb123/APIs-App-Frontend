@@ -11,7 +11,7 @@ import Loading from './views/Loading.jsx'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Provider store={store}>
-      <PersistGate loading={<Loading />} persistor={persistor}>
+      <PersistGate loading={<Loading/>} persistor={persistor}>
         <BrowserRouter>
           <App/>
         </BrowserRouter>

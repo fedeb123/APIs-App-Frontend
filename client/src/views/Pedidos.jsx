@@ -1,31 +1,27 @@
 import { useState, useEffect, useMemo } from "react"
-import { Clock, ShoppingCart } from "lucide-react"
+import { Clock, ShoppingCart } from 'lucide-react'
+import { useNavigate } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
 
 import { ConfirmationModal } from "../components/ui/pedidos/ConfirmationModal"
 import { OrderCard } from "../components/ui/pedidos/OrderCard"
 
+import { createPedido } from "../features/pedidosSlice"
 import { fetchPedidosUsuario, confirmPedido } from "../features/pedidosSlice"
-import { fetchProductos } from "../features/productosSlice"
+import { clearCart } from "../features/cartSlice"
 
 export default function Pedidos() {
+  const { user } = useSelector((state) => state.auth)
+  const { cart } = useSelector((state) => state.cart)
+
+  const { items: pedidos, loading: loadingPedidos, error: errorPedidos, confirming, confirmError, creating, createError } = useSelector((state) => state.pedidos)
+
+  const { productos, loading: loadingProductos, error: errorProductos } = useSelector((state) => state.productos)
+
+  const navigate = useNavigate()
   const dispatch = useDispatch()
 
   const [pedidoAConfirmar, setPedidoAConfirmar] = useState(null)
-
-  const {
-    items: pedidos,
-    loading: loadingPedidos,
-    error: errorPedidos,
-    confirming,
-    confirmError,
-  } = useSelector((state) => state.pedidos)
-
-  const {
-    productos,
-    loading: loadingProductos,
-    error: errorProductos,
-  } = useSelector((state) => state.productos)
 
   useEffect(() => {
     dispatch(fetchPedidosUsuario())
@@ -50,6 +46,12 @@ export default function Pedidos() {
       alert(`Error al confirmar el pedido: ${confirmError.message || "Error de servidor"}`)
     }
   }, [confirmError])
+
+  useEffect(() => {
+    if (createError) {
+      alert(`Error al crear el pedido: ${createError.message || "Error de servidor"}`)
+    }
+  }, [createError])
 
   const handleConfirmClick = (pedido) => setPedidoAConfirmar(pedido)
   const handleCloseModal = () => setPedidoAConfirmar(null)
@@ -101,24 +103,34 @@ export default function Pedidos() {
       return
     }
 
-    dispatch(
-      confirmPedido({
-        pedidoId,
-        codigoDescuento: codigo,
-        metodoDePago: metodoPago,
-      }),
-    )
-    .unwrap()
-    .then(() => {
-      alert("¡Pedido confirmado y facturado con éxito!")
-      handleCloseModal()
-      dispatch(fetchPedidosUsuario())
-    })
-    .catch((err) => {
-      alert(`Error al confirmar el pedido: ${err.message || "Error de servidor"}`)
-    })
+    dispatch(confirmPedido({pedidoId, codigoDescuento: codigo, metodoDePago: metodoPago }))
+    alert("¡Pedido confirmado y facturado con éxito!")
+    handleCloseModal()
+    navigate("/pedidos", { replace: true })
   }
 
+  const handleCreatePedido = () => {
+    if (!user) {
+      alert("Tenés que estar logueado para crear un pedido")
+      navigate("/login")
+      return
+    }
+    if (!cart || cart.length === 0) {
+      alert("El carrito está vacío")
+      return
+    }
+
+    const payload = {
+      clienteId: user.id,
+      detalles: cart.map((it) => ({ productoId: it.id, cantidad: it.cantidad })),
+    }
+
+    dispatch(createPedido(payload))
+    alert("Pedido creado! Ahora confírmalo para finalizarlo.")
+
+    dispatch(clearCart())
+    navigate("/pedidos", { replace: true })    
+  }
 
   const pedidosPendientes = useMemo(
     () => pedidos.filter((p) => p.estado === "PENDIENTE"),
@@ -126,7 +138,7 @@ export default function Pedidos() {
   )
 
   const pedidosConfirmados = useMemo(
-    () => pedidos.filter((p) => p.estado !== "PENDIENTE"),
+    () => pedidos.filter((p) => p.estado === "CONFIRMADO"),
     [pedidos],
   )
 
@@ -134,6 +146,14 @@ export default function Pedidos() {
 
   return (
     <div className="container mx-auto py-10">
+      <div className="mb-6">
+        <button
+          onClick={handleCreatePedido}
+          className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded"
+        >
+          Crear pedido desde carrito
+        </button>
+      </div>
       {pedidoAConfirmar && (
         <ConfirmationModal
           pedido={pedidoAConfirmar}
