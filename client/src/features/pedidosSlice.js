@@ -3,6 +3,16 @@ import requester from "./interceptor/axios"
 
 const API_URL = import.meta.env.VITE_APP_API_URL || "http://localhost:8090"
 
+// crear pedido (POST al backend)
+export const createPedido = createAsyncThunk(
+  "pedidos/createPedido",
+  async (payload) => {
+    const res = await requester.post("/pedidos", payload)
+    return res.data
+  },
+)
+
+
 //pedidos de un usuario
 export const fetchPedidosUsuario = createAsyncThunk(
   "pedidos/fetchPedidosUsuario",
