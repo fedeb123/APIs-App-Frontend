@@ -101,7 +101,7 @@ const categoriasSlice = createSlice({
             if (categoria) {
                 state.categoriasDesc.push({ ...categoria, activa: false });
             }       
-            toast.success("Categoría eliminada.");
+            toast.success("Categoría desactivada.");
 
         })
         .addCase(deleteCategoria.rejected, () => {
