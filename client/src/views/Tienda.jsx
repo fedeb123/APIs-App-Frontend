@@ -92,7 +92,7 @@ export default function Tienda() {
       return
     }
 
-    dispatch(addToCart({selectedProduct, quantity}))
+    dispatch(addToCart({producto: selectedProduct, cantidad: quantity}))
     closeModal()
     alert(`${selectedProduct.nombre} agregado al carrito`)
   }
