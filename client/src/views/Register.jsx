@@ -3,7 +3,7 @@ import { Button } from "../components/ui/Button"
 import { Input } from "../components/ui/Input"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
 import { Link, useNavigate } from "react-router-dom"
-
+import { toast } from "react-toastify"
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchUser, registerUser } from "../features/authSlice"
 
@@ -50,7 +50,7 @@ const Register=()=>{
         e.preventDefault();
         
         if (form.password !== form.confirmarPassword) {
-            alert("Las contraseñas no coinciden");
+            toast.info("Las contraseñas no coinciden");
             return;
         }
 
@@ -69,7 +69,7 @@ const Register=()=>{
     useEffect(() => {
         if (error) {
             console.error(JSON.stringify(error))
-            alert(`Ha ocurrido un error en el registro: ${JSON.stringify(error)}`)
+            toast.error(`Ha ocurrido un error en el registro: ${JSON.stringify(error)}`)
         }
     }, [error])
 

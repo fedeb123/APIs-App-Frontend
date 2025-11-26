@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchUser, loginUser } from "../features/authSlice"
 
+import { toast } from "react-toastify"
+
 export default function Login() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -41,7 +43,7 @@ export default function Login() {
   useEffect(() => {
     if (error) {
       console.error(JSON.stringify(error))
-      alert(`Ha ocurrido un error en el logueo: ${JSON.stringify(error)}`)
+      toast.error(`Ha ocurrido un error en el logueo: ${JSON.stringify(error)}`)
     }
   }, [error])
 

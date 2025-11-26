@@ -7,6 +7,7 @@ import App from './App.jsx'
 import store, { persistor } from './features/store.js'
 import { PersistGate } from 'redux-persist/integration/react'
 import Loading from './views/Loading.jsx'
+import { ToastContainer } from 'react-toastify'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -14,6 +15,7 @@ createRoot(document.getElementById('root')).render(
       <PersistGate loading={<Loading/>} persistor={persistor}>
         <BrowserRouter>
           <App/>
+          <ToastContainer/>
         </BrowserRouter>
       </PersistGate>
     </Provider>

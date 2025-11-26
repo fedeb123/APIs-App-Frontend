@@ -6,6 +6,7 @@ import { Input } from "../components/ui/Input";
 import { User, Mail, Lock, Phone } from "lucide-react"; // Importa el ícono del teléfono
 import { useSelector, useDispatch } from "react-redux";
 import { fetchUser, updateUser, logoutAndClear } from "../features/authSlice";
+import { toast } from "react-toastify";
 
 function formReducer(state, action) {
   if (action.type === 'UPDATE_FIELD') {
@@ -28,7 +29,7 @@ export default function Perfil() {
 
   useEffect(() => {
     if (error) {
-      alert(`Error al actualizar: ${updateError.body?.message || 'Error de servidor'}`);
+      toast.error(`Error al actualizar: ${updateError.body?.message || 'Error de servidor'}`);
     }
   }, [error]);
 
