@@ -3,21 +3,21 @@ import { Link, useNavigate } from "react-router-dom"
 import { User, ShoppingCart } from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux'
 import { UserDropdown } from "./ui/header/UserDropdown"
-import { useCart } from "../context/CartContext"
 import { CartDrawer } from "./ui/cart/CartDrawer"
+
 import { logoutAndClear } from "../features/authSlice"
 
 export function Header() {
   const navigate = useNavigate()
   const { user } = useSelector((state) => state.auth)
+  const { cantidad } = useSelector((state) => state.cart)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
-  const { getCartCount } = useCart()
+
   const dispatch = useDispatch()
 
   const userRole = user?.rol?.nombre
-  const cartCount = getCartCount()
-  const cartCount = getCartCount()
+  const cartCount = cantidad
 
   const handleLogout = () => {
     dispatch(logoutAndClear());
@@ -26,7 +26,6 @@ export function Header() {
   }
 
   return (
-    <>
     <>
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
