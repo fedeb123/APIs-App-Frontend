@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import requester from "./interceptor/axios"
+import { toast } from "react-toastify";
 
 const apiUrl = import.meta.env.VITE_APP_API_URL;
 const categoriasUrl = `${apiUrl}/categorias`
@@ -76,12 +77,20 @@ const categoriasSlice = createSlice({
         })
         .addCase(createCategorias.fulfilled, (state,action)=>{
             state.categorias = [...state.categorias, action.payload];
+            toast.success("Categoría creada correctamente.");
+        })
+        .addCase(createCategorias.rejected, ()=>{
+            toast.error("No se pudo crear la categoría. Intente nuevamente.");
         })
         .addCase(updateCategoria.fulfilled, (state,action)=>{
             const index = state.categorias.findIndex(categoria => categoria.id === action.payload.id)
             if (index !== -1){
                 state.categorias[index] = action.payload;
+                toast.success("Categoría actualizada.");
             }
+        })
+        .addCase(updateCategoria.rejected, () => {
+            toast.error("Error al actualizar la categoría.");
         })
         .addCase(deleteCategoria.fulfilled, (state, action) => {
             const id = action.payload;
@@ -91,7 +100,12 @@ const categoriasSlice = createSlice({
 
             if (categoria) {
                 state.categoriasDesc.push({ ...categoria, activa: false });
-            }        
+            }       
+            toast.success("Categoría eliminada.");
+
+        })
+        .addCase(deleteCategoria.rejected, () => {
+            toast.error("No se pudo eliminar la categoría.");
         })
  
         .addCase(reactivarCategoria.fulfilled, (state, action) => {
@@ -104,6 +118,8 @@ const categoriasSlice = createSlice({
                 state.categoriasDesc = state.categoriasDesc.filter(c => c.id !== id)
                 // agregar a activas
                 state.categorias.push(categoria)
+                toast.success("Categoría reactivada.");
+
         }})
     }
 })
