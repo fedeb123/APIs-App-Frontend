@@ -97,9 +97,12 @@ const productosSlice = createSlice({
             })
 
             .addCase(reactivarProducto.fulfilled, (state, action) => {
-                const producto = action.payload
-                state.productosDescontinuados = state.productosDescontinuados.filter(p => p.id !== producto.id)
-                state.productos.push(producto)
+                const id = action.payload.id
+                const producto = state.productosDescontinuados.find(p=> p.id === id)
+                if (producto){   
+                    state.productosDescontinuados = state.productosDescontinuados.filter(p => p.id !== producto.id)
+                    state.productos.push(producto)
+                }
             })
     }
 })
