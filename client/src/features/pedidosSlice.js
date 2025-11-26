@@ -18,7 +18,7 @@ export const fetchPedidosUsuario = createAsyncThunk(
   "pedidos/fetchPedidosUsuario",
   async () => {
     const res = await requester.get("/pedidos/usuario")
-    console.log(res)
+
     if (Array.isArray(res.data)) {
       return res.data
     }

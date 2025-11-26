@@ -7,8 +7,10 @@ import { CategorySidebar } from "../components/ui/tienda/CategorySidebar"
 import { ProductModal } from "../components/ui/tienda/ProductModal"
 
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchProductosStockeados } from "../features/productosSlice"
+import { createProducto, fetchProductosStockeados } from "../features/productosSlice"
 import { fetchCategorias } from "../features/categoriasSlice"
+import { createPedido } from "../features/pedidosSlice"
+
 
 export default function Tienda() {
   const [search, setSearch] = useState("")
@@ -27,8 +29,8 @@ export default function Tienda() {
 
   const { productos: products, loading: loadingProducts, error: errorProducts } = useSelector((state) => state.productos)
   const { categorias: categoriesContent, loading: loadingCategories, error: errorCategories } = useSelector((state)=> state.categorias)
-  const { response: responsePost, loading: loadingPost, error: errorPost } = useFetch("pedidos", "POST", payload, token)
-
+  const {creating: creatingPedido, createError} = useSelector((state)=>state.pedidos)
+  
   useEffect(() => {
     if (products && categoriesContent) {
       //console.log(products)
@@ -41,12 +43,6 @@ export default function Tienda() {
       )
     }
   }, [categoriesContent, products, search, filter])
-
-  useEffect(() => {
-    if (errorPost) {
-      console.error(JSON.stringify(errorPost))
-    }
-  }, [errorPost])
 
   useEffect(() => {
     dispatch(fetchProductosStockeados())
@@ -99,7 +95,9 @@ export default function Tienda() {
       return
     }
 
-    setProductosComprados([...productosComprados, { ...selectedProduct, cantidad: quantity }])
+    if(!selectedProduct) return
+
+    setProductosComprados([...productosComprados, {...selectedProduct, cantidad: quantity}])
 
     const data = {
       clienteId: user.id,
@@ -111,15 +109,11 @@ export default function Tienda() {
       ],
     }
 
-    setPayload(data)
+    dispatch(createPedido(data))
+    closeModal()
+
   }
 
-  useEffect(() => {
-    if (!loadingPost && responsePost) {
-      alert("Gracias por Tu Compra!")
-      closeModal()
-    }
-  }, [responsePost, loadingPost])
 
   return (
     <div className="min-h-screen">

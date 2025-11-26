@@ -28,11 +28,8 @@ export default function Pedidos() {
   } = useSelector((state) => state.productos)
 
   useEffect(() => {
-    if (token) {
-      dispatch(fetchPedidosUsuario())
-    }
-    dispatch(fetchProductos())
-  }, [dispatch, token])
+    dispatch(fetchPedidosUsuario())
+  }, [dispatch])
 
   useEffect(() => {
     if (errorProductos) {

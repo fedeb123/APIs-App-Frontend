@@ -72,14 +72,9 @@ export default function Admin() {
     dispatch(fetchUsuarios())
     dispatch(fetchProductos())
     dispatch(fetchProductosDescontinuados())
+    dispatch(fetchPedidosAdmin())
   },[dispatch])
   
-  useEffect(() => {
-    if (activeTab === "pedidos") {
-      dispatch(fetchPedidosAdmin())
-    }
-  }, [dispatch, activeTab])
-
   const handleSaveCategoria = () => {
     const nombre = categoriaForm.nombre.trim()
     const descripcion = categoriaForm.descripcion.trim()
@@ -157,11 +152,11 @@ export default function Admin() {
       dispatch(createProducto(formData))
     }
 
-    setApiConfig({
-      location: editingProducto ? `productos/${editingProducto.id}` : `productos`,
-      method: editingProducto ? "PUT" : "POST",
-      payload: formData,
-    })
+    // setApiConfig({
+    //   location: editingProducto ? `productos/${editingProducto.id}` : `productos`,
+    //   method: editingProducto ? "PUT" : "POST",
+    //   payload: formData,
+    // }) // NO DEBERIA ESTAR ACA (?????????)
 
     setShowProductoModal(false)
     setProductoForm({ nombre: "", descripcion: "", precio: "", stock: "", categoriaId: "", imagenFile: null })
