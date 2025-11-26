@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from "react"
 import { Clock, ShoppingCart } from "lucide-react"
 import { useDispatch, useSelector } from "react-redux"
 
-import useAuth from "../hooks/useAuth"
 import { ConfirmationModal } from "../components/ui/pedidos/ConfirmationModal"
 import { OrderCard } from "../components/ui/pedidos/OrderCard"
 
@@ -10,7 +9,6 @@ import { fetchPedidosUsuario, confirmPedido } from "../features/pedidosSlice"
 import { fetchProductos } from "../features/productosSlice"
 
 export default function Pedidos() {
-  const { token } = useAuth()
   const dispatch = useDispatch()
 
   const [pedidoAConfirmar, setPedidoAConfirmar] = useState(null)
@@ -30,11 +28,8 @@ export default function Pedidos() {
   } = useSelector((state) => state.productos)
 
   useEffect(() => {
-    if (token) {
-      dispatch(fetchPedidosUsuario())
-    }
-    dispatch(fetchProductos())
-  }, [dispatch, token])
+    dispatch(fetchPedidosUsuario())
+  }, [dispatch])
 
   useEffect(() => {
     if (errorProductos) {

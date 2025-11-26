@@ -1,14 +1,16 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
 import requester from "./interceptor/axios";
+import { PURGE } from "redux-persist";
 
 const apiUrl = import.meta.env.VITE_APP_API_URL;
 const registerUrl = `${apiUrl}/v1/auth/register`
 const loginUrl = `${apiUrl}/v1/auth/authenticate`
 const userUrl = `${apiUrl}/usuarios/usuario`
+const updateUserUrl = `${apiUrl}/usuarios/`
 
 const initialState = {
     user: null,
-    token: localStorage.getItem('jwtToken') ? localStorage.getItem('jwtToken') : null,
+    token: null,
     loading: false,
     error: null
 }
@@ -29,10 +31,16 @@ export const fetchUser = createAsyncThunk('auth/user', async() => {
 })
 
 export const logoutAndClear = () => (dispatch) => {
-  localStorage.removeItem("user");
-  localStorage.removeItem("jwtToken");
-  dispatch(logout());
+  dispatch({ type: PURGE, result: () => {} })
+  dispatch(logout())
 }
+
+export const updateUser = createAsyncThunk('auth/updateUser', async(updatedUser) => {
+    if (updatedUser) {
+        const { data } = await requester.put(updateUserUrl + updatedUser.id, updatedUser.payload);
+        return data;
+    }    
+})
 
 const authSlice = createSlice({
     name: 'auth',
@@ -55,7 +63,6 @@ const authSlice = createSlice({
         .addCase(registerUser.fulfilled, (state, action) => {
             state.loading = false;
             state.token = action.payload.accessToken;
-            localStorage.setItem('jwtToken', action.payload.accessToken);
         })
         .addCase(loginUser.pending, (state) => {
             state.loading = true;
@@ -67,8 +74,7 @@ const authSlice = createSlice({
         })
         .addCase(loginUser.fulfilled, (state, action) => {
             state.loading = false;
-            state.token = action.payload.accessToken;
-            localStorage.setItem('jwtToken', action.payload.accessToken);
+            state.token = action.payload.accessToken;;
         })
         .addCase(fetchUser.pending, (state) => {
             state.loading = true;
@@ -81,7 +87,18 @@ const authSlice = createSlice({
         .addCase(fetchUser.fulfilled, (state, action) => {
             state.loading = false;
             state.user = action.payload;
-            localStorage.setItem('user', JSON.stringify(action.payload))
+        })
+        .addCase(updateUser.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        })
+        .addCase(updateUser.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.error?.message;
+        })
+        .addCase(updateUser.fulfilled, (state, action) => {
+            state.loading = false;
+            state.user = action.payload;
         })
     }
 })

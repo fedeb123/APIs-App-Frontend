@@ -4,8 +4,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "../components/ui/Card"
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { User, Mail, Lock, Phone } from "lucide-react"; // Importa el ícono del teléfono
-import useFetch from "../hooks/useFetch";
-import useAuth from "../hooks/useAuth";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchUser, updateUser, logoutAndClear } from "../features/authSlice";
 
 function formReducer(state, action) {
   if (action.type === 'UPDATE_FIELD') {
@@ -16,31 +16,21 @@ function formReducer(state, action) {
 
 export default function Perfil() {
   const navigate = useNavigate();
-  const { user, loadingProfile: userLoading, refreshUser, logout, token } = useAuth();
+  const dispatchRedux = useDispatch();
+  const { user, loading: userLoading, error } = useSelector((state) => state.auth);
   
   const [isEditing, setIsEditing] = useState(false);
   const [formState, dispatch] = useReducer(formReducer, {});
 
-  const [updatePayload, setUpdatePayload] = useState(null);
-  const [updateLocation, setUpdateLocation] = useState(null);
-  const { response: updateResponse, error: updateError } = useFetch(updateLocation, 'PUT', updatePayload, token);
+  useEffect(() => {
+    dispatchRedux(fetchUser());
+  }, [dispatchRedux])
 
   useEffect(() => {
-    if (user) {
-      setUpdateLocation(`usuarios/${user.id}`);
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (updateResponse) {
-      alert("Perfil actualizado con éxito.");
-      setIsEditing(false);
-      refreshUser();
-    }
-    if (updateError) {
+    if (error) {
       alert(`Error al actualizar: ${updateError.body?.message || 'Error de servidor'}`);
     }
-  }, [updateResponse, updateError]);
+  }, [error]);
 
   const handleEditClick = () => {
     // Carga el estado del formulario con los datos actuales del usuario
@@ -57,6 +47,7 @@ export default function Perfil() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     const payload = {
       nombre: formState.nombre,
       apellido: formState.apellido,
@@ -64,13 +55,18 @@ export default function Perfil() {
       direccion: formState.direccion,
       password: formState.newPassword,
     };
-    setUpdatePayload(payload);
+
+    const updatedUser = {
+      id: user.id,
+      payload: payload
+    }
+    
+    dispatchRedux(updateUser(updatedUser))
   };
 
   const handleLogout = () => {
-    logout();
+    dispatchRedux(logoutAndClear())
     navigate("/");
-    window.location.reload(); // Para asegurar que el header se actualice
   };
 
   if (userLoading) {
