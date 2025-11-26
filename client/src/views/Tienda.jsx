@@ -9,28 +9,28 @@ import { useDispatch, useSelector } from 'react-redux'
 import { createProducto, fetchProductosStockeados } from "../features/productosSlice"
 import { fetchCategorias } from "../features/categoriasSlice"
 import { createPedido } from "../features/pedidosSlice"
-
-import { useCart } from "../context/CartContext"
+import { addToCart, removeFromCart, clearCart, updateQuantity } from "../features/cartSlice"
 
 export default function Tienda() {
   const [search, setSearch] = useState("")
   const [showModal, setShowModal] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null)
-  const [productosComprados, setProductosComprados] = useState([])
+
   const [filter, setFilter] = useState("todos")
   const [filteredProducts, setFilteredProducts] = useState([])
   const [user, setUser] = useState(null)
   const [quantity, setQuantity] = useState(1)
-  const [payload, setPayload] = useState(null)
 
   const { user: responseUser, loadingProfile, token } = useSelector((state) => state.auth)
+  const { cart, precioTotal, cantidad } = useSelector((state) => state.cart)
+
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  const { addToCart } = useCart()
+
 
   const { productos: products, loading: loadingProducts, error: errorProducts } = useSelector((state) => state.productos)
   const { categorias: categoriesContent, loading: loadingCategories, error: errorCategories } = useSelector((state)=> state.categorias)
-  const {creating: creatingPedido, createError} = useSelector((state)=>state.pedidos)
+  const { creating: creatingPedido, createError } = useSelector((state)=>state.pedidos)
   
   useEffect(() => {
     if (products && categoriesContent) {
@@ -96,17 +96,10 @@ export default function Tienda() {
       return
     }
 
-    addToCart(selectedProduct, quantity)
+    dispatch(addToCart({selectedProduct, quantity}))
     closeModal()
     alert(`${selectedProduct.nombre} agregado al carrito`)
   }
-
-  useEffect(() => {
-    if (!loadingPost && responsePost) {
-      alert("Gracias por Tu Compra!")
-      navigate("/pedidos")
-    }
-  }, [responsePost, loadingPost])
 
   return (
     <div className="min-h-screen">
