@@ -1,48 +1,27 @@
 import { useState, useEffect, useMemo } from "react"
 import { Clock, ShoppingCart } from 'lucide-react'
-import { useLocation, useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
 
-import { useCart } from "../context/CartContext"
 import { ConfirmationModal } from "../components/ui/pedidos/ConfirmationModal"
 import { OrderCard } from "../components/ui/pedidos/OrderCard"
 
+import { createPedido } from "../features/pedidosSlice"
 import { fetchPedidosUsuario, confirmPedido } from "../features/pedidosSlice"
-import { fetchProductos } from "../features/productosSlice"
+import { clearCart } from "../features/cartSlice"
 
 export default function Pedidos() {
-  const { token, user } = useAuth()
-  const { cart, clearCart } = useCart()
-  const location = useLocation()
-  const navigate = useNavigate()
-  const [refresh, setRefresh] = useState(false)
-  const [pedidos, setPedidos] = useState([])
-  const [productos, setProductos] = useState([])
-  const [cartPayload, setCartPayload] = useState(null)
+  const { user } = useSelector((state) => state.auth)
+  const { cart } = useSelector((state) => state.cart)
 
+  const { items: pedidos, loading: loadingPedidos, error: errorPedidos, confirming, confirmError, creating, createError } = useSelector((state) => state.pedidos)
+
+  const { productos, loading: loadingProductos, error: errorProductos } = useSelector((state) => state.productos)
+
+  const navigate = useNavigate()
   const dispatch = useDispatch()
 
-  const { response: responsePedidos, loading: loadingPedidos } = useFetch("pedidos/usuario", "GET", null, token, refresh)
-
   const [pedidoAConfirmar, setPedidoAConfirmar] = useState(null)
-
-  const { response: responseProductos, loading: loadingProductos, error: errorProductos } = useFetch("productos", "GET", null, null)
-  const { response: responseCartOrder, loading: loadingCartOrder, error: errorCartOrder } = useFetch("pedidos", "POST", cartPayload, token)
-
-
-  const {
-    items: pedidos,
-    loading: loadingPedidos,
-    error: errorPedidos,
-    confirming,
-    confirmError,
-  } = useSelector((state) => state.pedidos)
-
-  const {
-    productos,
-    loading: loadingProductos,
-    error: errorProductos,
-  } = useSelector((state) => state.productos)
 
   useEffect(() => {
     dispatch(fetchPedidosUsuario())
@@ -67,6 +46,12 @@ export default function Pedidos() {
       alert(`Error al confirmar el pedido: ${confirmError.message || "Error de servidor"}`)
     }
   }, [confirmError])
+
+  useEffect(() => {
+    if (createError) {
+      alert(`Error al crear el pedido: ${createError.message || "Error de servidor"}`)
+    }
+  }, [createError])
 
   const handleConfirmClick = (pedido) => setPedidoAConfirmar(pedido)
   const handleCloseModal = () => setPedidoAConfirmar(null)
@@ -118,80 +103,34 @@ export default function Pedidos() {
       return
     }
 
-    dispatch(
-      confirmPedido({
-        pedidoId,
-        codigoDescuento: codigo,
-        metodoDePago: metodoPago,
-      }),
-    )
-  useEffect(() => {
-    const cartFromState = location.state?.cart
-    
-    if (cartFromState && cartFromState.length > 0 && user) {
-      const data = {
-        clienteId: user.id,
-        detalles: cartFromState.map(item => ({
-          productoId: item.id,
-          cantidad: item.cantidad,
-        })),
-      }
-      setCartPayload(data)
-    }
-  }, [location.state, user])
-
-  useEffect(() => {
-    if (!loadingCartOrder && responseCartOrder) {
-      alert("Pedido creado! Ahora confírmalo para finalizarlo.")
-      clearCart()
-      setCartPayload(null)
-      setRefresh((prev) => !prev)
-      navigate("/pedidos", { replace: true, state: {} })
-    }
-    if (errorCartOrder) {
-      alert(`Error al crear el pedido: ${errorCartOrder.body?.message || "Error de servidor"}`)
-      setCartPayload(null)
-    }
-  }, [responseCartOrder, loadingCartOrder, errorCartOrder, clearCart, navigate])
-
-    .unwrap()
-    .then(() => {
-      alert("¡Pedido confirmado y facturado con éxito!")
-      handleCloseModal()
-      dispatch(fetchPedidosUsuario())
-    })
-    .catch((err) => {
-      alert(`Error al confirmar el pedido: ${err.message || "Error de servidor"}`)
-    })
+    dispatch(confirmPedido({pedidoId, codigoDescuento: codigo, metodoDePago: metodoPago }))
+    alert("¡Pedido confirmado y facturado con éxito!")
+    handleCloseModal()
+    navigate("/pedidos", { replace: true })
   }
-useEffect(() => {
-    const cartFromState = location.state?.cart
-    
-    if (cartFromState && cartFromState.length > 0 && user) {
-      const data = {
-        clienteId: user.id,
-        detalles: cartFromState.map(item => ({
-          productoId: item.id,
-          cantidad: item.cantidad,
-        })),
-      }
-      setCartPayload(data)
-    }
-  }, [location.state, user])
 
-  useEffect(() => {
-    if (!loadingCartOrder && responseCartOrder) {
-      alert("Pedido creado! Ahora confírmalo para finalizarlo.")
-      clearCart()
-      setCartPayload(null)
-      setRefresh((prev) => !prev)
-      navigate("/pedidos", { replace: true, state: {} })
+  const handleCreatePedido = () => {
+    if (!user) {
+      alert("Tenés que estar logueado para crear un pedido")
+      navigate("/login")
+      return
     }
-    if (errorCartOrder) {
-      alert(`Error al crear el pedido: ${errorCartOrder.body?.message || "Error de servidor"}`)
-      setCartPayload(null)
+    if (!cart || cart.length === 0) {
+      alert("El carrito está vacío")
+      return
     }
-  }, [responseCartOrder, loadingCartOrder, errorCartOrder, clearCart, navigate])
+
+    const payload = {
+      clienteId: user.id,
+      detalles: cart.map((it) => ({ productoId: it.id, cantidad: it.cantidad })),
+    }
+
+    dispatch(createPedido(payload))
+    alert("Pedido creado! Ahora confírmalo para finalizarlo.")
+
+    dispatch(clearCart())
+    navigate("/pedidos", { replace: true })    
+  }
 
   const pedidosPendientes = useMemo(
     () => pedidos.filter((p) => p.estado === "PENDIENTE"),
@@ -199,14 +138,22 @@ useEffect(() => {
   )
 
   const pedidosConfirmados = useMemo(
-    () => pedidos.filter((p) => p.estado !== "PENDIENTE"),
+    () => pedidos.filter((p) => p.estado === "CONFIRMADO"),
     [pedidos],
   )
 
-  if (loadingPedidos || loadingCartOrder) return <div className="text-center py-10">Cargando pedidos...</div>
+  if (loadingPedidos) return <div className="text-center py-10">Cargando pedidos...</div>
 
   return (
     <div className="container mx-auto py-10">
+      <div className="mb-6">
+        <button
+          onClick={handleCreatePedido}
+          className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded"
+        >
+          Crear pedido desde carrito
+        </button>
+      </div>
       {pedidoAConfirmar && (
         <ConfirmationModal
           pedido={pedidoAConfirmar}
