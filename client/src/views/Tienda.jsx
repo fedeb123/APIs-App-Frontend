@@ -10,6 +10,8 @@ import { fetchProductosStockeados } from "../features/productosSlice"
 import { fetchCategorias } from "../features/categoriasSlice"
 import { addToCart } from "../features/cartSlice"
 
+import { toast } from "react-toastify"
+
 export default function Tienda() {
   const [search, setSearch] = useState("")
   const [showModal, setShowModal] = useState(false)
@@ -64,7 +66,7 @@ export default function Tienda() {
 
   const handleAgregarProducto = (product) => {
     if (!user || !token) {
-      alert("Tienes que estar logueado para comprar")
+      toast.error("Tienes que estar logueado para comprar")
       navigate("/login")
       return
     }
@@ -81,20 +83,20 @@ export default function Tienda() {
 
   const handleComprar = () => {
     if (!user) {
-      alert("Tienes que estar logueado para comprar")
+      toast.error("Tienes que estar logueado para comprar")
       navigate("/login")
       return
     }
 
     if (!user.direccion) {
-      alert("Carga tu direccion antes de comprar")
+      toast.error("Carga tu direccion antes de comprar")
       navigate("/perfil")
       return
     }
 
     dispatch(addToCart({producto: selectedProduct, cantidad: quantity}))
     closeModal()
-    alert(`${selectedProduct.nombre} agregado al carrito`)
+    toast.info(`${selectedProduct.nombre} agregado al carrito`)
   }
 
   return (

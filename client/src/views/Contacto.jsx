@@ -3,6 +3,7 @@ import { Button } from "../components/ui/Button"
 import { Input } from "../components/ui/Input"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
 import { Mail, Phone, MapPin, Send } from "lucide-react"
+import { toast } from "react-toastify"
 
 export default function Contacto() {
   const [formData, setFormData] = useState({
@@ -13,8 +14,7 @@ export default function Contacto() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    console.log("Formulario enviado:", formData)
-    alert('Su mensaje ha sido enviado!')
+    toast.success('Su mensaje ha sido enviado!')
   }
 
   const handleChange = (e) => {

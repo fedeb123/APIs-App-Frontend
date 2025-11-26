@@ -17,6 +17,8 @@ import { fetchPedidosAdmin, enviarPedido } from "../features/pedidosSlice"
 import { fetchUsuarios } from "../features/usuariosSlice"
 import { fetchProductos, fetchProductosDescontinuados, createProducto, updateProducto, deleteProducto, reactivarProducto } from "../features/productosSlice"
 
+import { toast } from "react-toastify"
+
 export default function Admin() {
   const dispatch = useDispatch()
   const [activeTab, setActiveTab] = useState("usuarios")
@@ -165,7 +167,7 @@ export default function Admin() {
 
   const handleEditProducto = (producto) => {
     if (!producto || !producto.id) {
-      return alert("Producto inválido: no se puede editar.")
+      return toast.error("Producto inválido: no se puede editar.")
     }
     setEditingProducto(producto)
     setProductoForm({

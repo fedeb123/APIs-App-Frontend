@@ -10,6 +10,8 @@ import { createPedido } from "../features/pedidosSlice"
 import { fetchPedidosUsuario, confirmPedido } from "../features/pedidosSlice"
 import { clearCart } from "../features/cartSlice"
 
+import { toast } from "react-toastify"
+
 export default function Pedidos() {
   const { user } = useSelector((state) => state.auth)
   const { cart } = useSelector((state) => state.cart)
@@ -30,26 +32,25 @@ export default function Pedidos() {
   useEffect(() => {
     if (errorProductos) {
       console.error("Error productos:", errorProductos)
-      alert("Error al correlacionar stock de productos: " + JSON.stringify(errorProductos))
+      toast.error("Error al correlacionar stock de productos: " + JSON.stringify(errorProductos))
     }
   }, [errorProductos])
 
   useEffect(() => {
     if (errorPedidos) {
-      console.error("Error pedidos:", errorPedidos)
-      alert("Error al cargar pedidos: " + JSON.stringify(errorPedidos))
+      toast.error("Error al cargar pedidos: " + JSON.stringify(errorPedidos))
     }
   }, [errorPedidos])
 
   useEffect(() => {
     if (confirmError) {
-      alert(`Error al confirmar el pedido: ${confirmError.message || "Error de servidor"}`)
+      toast.error(`Error al confirmar el pedido: ${confirmError.message || "Error de servidor"}`)
     }
   }, [confirmError])
 
   useEffect(() => {
     if (createError) {
-      alert(`Error al crear el pedido: ${createError.message || "Error de servidor"}`)
+      toast.error(`Error al crear el pedido: ${createError.message || "Error de servidor"}`)
     }
   }, [createError])
 
@@ -75,7 +76,7 @@ export default function Pedidos() {
     let exepcionDescontinuado = false
 
     if (!productos || productos.length === 0 || Object.keys(mapStockAndStateProductsById).length === 0) {
-      alert("Todavía estamos cargando el stock de productos. Intentá de nuevo en unos segundos.")
+      toast.loading("Todavía estamos cargando el stock de productos. Intentá de nuevo en unos segundos.")
       return
     }
 
@@ -83,7 +84,7 @@ export default function Pedidos() {
       const prod = mapStockAndStateProductsById?.[item.productoId]
 
       if (!prod) {
-        alert(`Momentaneamente no comercializamos el producto: ${item.nombreProducto}. Intente más tarde.`)
+        toast.error(`Momentaneamente no comercializamos el producto: ${item.nombreProducto}. Intente más tarde.`)
         exepcionDescontinuado = true
         return
       }
@@ -91,9 +92,7 @@ export default function Pedidos() {
       const stockRestante = (prod?.stock ?? 0) - (item?.cantidad ?? 0)
 
       if (stockRestante < 0) {
-        alert(
-          `Momentaneamente no contamos con stock de: ${item.cantidad} para el producto: ${item.nombreProducto}. Intente más tarde.`,
-        )
+        toast.error(`Momentaneamente no contamos con stock de: ${item.cantidad} para el producto: ${item.nombreProducto}. Intente más tarde.`)
         exepcionFaltante = true
       }
     })
@@ -104,19 +103,19 @@ export default function Pedidos() {
     }
 
     dispatch(confirmPedido({pedidoId, codigoDescuento: codigo, metodoDePago: metodoPago }))
-    alert("¡Pedido confirmado y facturado con éxito!")
+    toast.success("¡Pedido confirmado y facturado con éxito!")
     handleCloseModal()
     navigate("/pedidos", { replace: true })
   }
 
   const handleCreatePedido = () => {
     if (!user) {
-      alert("Tenés que estar logueado para crear un pedido")
+      toast.error("Tenés que estar logueado para crear un pedido")
       navigate("/login")
       return
     }
     if (!cart || cart.length === 0) {
-      alert("El carrito está vacío")
+      toast.error("El carrito está vacío")
       return
     }
 
@@ -126,7 +125,7 @@ export default function Pedidos() {
     }
 
     dispatch(createPedido(payload))
-    alert("Pedido creado! Ahora confírmalo para finalizarlo.")
+    toast.success("Pedido creado! Ahora confírmalo para finalizarlo.")
 
     dispatch(clearCart())
     navigate("/pedidos", { replace: true })    

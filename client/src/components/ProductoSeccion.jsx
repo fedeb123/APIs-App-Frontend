@@ -3,6 +3,8 @@ import { Card } from "./ui/Card"
 import { useDispatch, useSelector } from "react-redux"
 import { fetchProductosStockeados } from "../features/productosSlice"
 
+import { toast } from "react-toastify"
+
 const imagesUrl  = import.meta.env.VITE_APP_API_IMAGES_URL
 
 export function ProductoSeccion() {
@@ -12,7 +14,7 @@ export function ProductoSeccion() {
 
   useEffect(() => {
     if (error) {
-      alert(`Ha ocurrido un error: ${error}`)
+      toast.error(`Ha ocurrido un error: ${error}`)
     }
   }, [error])
 
