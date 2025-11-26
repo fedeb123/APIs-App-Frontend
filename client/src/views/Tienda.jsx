@@ -6,10 +6,9 @@ import { ProductCard } from "../components/ui/tienda/ProductCard"
 import { CategorySidebar } from "../components/ui/tienda/CategorySidebar"
 import { ProductModal } from "../components/ui/tienda/ProductModal"
 import { useDispatch, useSelector } from 'react-redux'
-import { createProducto, fetchProductosStockeados } from "../features/productosSlice"
+import { fetchProductosStockeados } from "../features/productosSlice"
 import { fetchCategorias } from "../features/categoriasSlice"
-import { createPedido } from "../features/pedidosSlice"
-import { addToCart, removeFromCart, clearCart, updateQuantity } from "../features/cartSlice"
+import { addToCart } from "../features/cartSlice"
 
 export default function Tienda() {
   const [search, setSearch] = useState("")
@@ -22,15 +21,12 @@ export default function Tienda() {
   const [quantity, setQuantity] = useState(1)
 
   const { user: responseUser, loadingProfile, token } = useSelector((state) => state.auth)
-  const { cart, precioTotal, cantidad } = useSelector((state) => state.cart)
 
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
-
   const { productos: products, loading: loadingProducts, error: errorProducts } = useSelector((state) => state.productos)
   const { categorias: categoriesContent, loading: loadingCategories, error: errorCategories } = useSelector((state)=> state.categorias)
-  const { creating: creatingPedido, createError } = useSelector((state)=>state.pedidos)
   
   useEffect(() => {
     if (products && categoriesContent) {
