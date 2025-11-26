@@ -13,10 +13,9 @@ import { attachInterceptor } from './interceptor/axios'
 import pedidosReducer from "./pedidosSlice"
 
 const persistConfig = {
-    key: "root",
+    key: "auth",
     storage,
-    stateReconciler: autoMergeLevel2,
-    whitelist: ["auth"]
+    stateReconciler: autoMergeLevel2
 }
 
 const authPersistedReducer = persistReducer(persistConfig, authReducer)
