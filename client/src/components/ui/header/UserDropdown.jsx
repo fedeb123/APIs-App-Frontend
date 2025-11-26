@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react"
+import { useRef, useEffect, use } from "react"
 import { Link } from "react-router-dom"
 import { User, ShoppingBag, LogOut, Shield } from "lucide-react"
 
@@ -32,6 +32,7 @@ export function UserDropdown({ isOpen, onClose, userRole, onLogout }) {
         <User className="h-4 w-4 mr-3" />
         Mis Datos
       </Link>
+      {userRole !== "ADMIN" && (
       <Link
         to="/pedidos"
         onClick={onClose}
@@ -40,6 +41,7 @@ export function UserDropdown({ isOpen, onClose, userRole, onLogout }) {
         <ShoppingBag className="h-4 w-4 mr-3" />
         Mis Pedidos
       </Link>
+      )}
 
       {userRole === "ADMIN" && (
         <Link
