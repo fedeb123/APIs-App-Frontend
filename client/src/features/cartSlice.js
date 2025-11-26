@@ -14,8 +14,9 @@ const initialState = {
 
 const calcularTotales = (cart) => {
     return cart.reduce((total, item) => {
-        total.precio += item.precio * item.cantidad
+        total.precioTotal += item.precio * item.cantidad
         total.cantidad += item.cantidad
+        return total
     })
 }
 
@@ -39,7 +40,7 @@ const cartSlice = createSlice({
             if (!itemExistente) {
                 state.cart.push =({...producto, cantidad: cantidad})
                 const totales = calcularTotales(state.cart)
-                state.precio = totales.precio
+                state.precioTotal = totales.precioTotal
                 state.cantidad = totales.cantidad
             }
         },
@@ -53,31 +54,27 @@ const cartSlice = createSlice({
             })
 
             const totales = calcularTotales(state.cart)
-            state.precio = totales.precio
+            state.precioTotal = totales.precioTotal
             state.cantidad = totales.cantidad
         },
         updateQuantity: (state, action) => {
 
             const { id, cantidadNueva } = action.payload
             
-            if (!id || cantidadNueva === 0) {
-                return;
-            }
+            const item = state.cart.find(i => i.id === id)
 
-            state.cart.map((item) => {
-                item.id === producto.id ? {...item, cantidad: Math.max(1, Math.min(cantidadNueva, item.stock))} : item
-            })
+            if (!item || cantidadNueva === 0) return
+            item.cantidad = Math.max(1, Math.min(cantidadNueva, item.stock ?? Infinity))
 
             const totales = calcularTotales(state.cart)
-            state.precio = totales.precio
+            state.precioTotal = totales.precioTotal
             state.cantidad = totales.cantidad
         },
         clearCart: (state) => {
             state.cart = []
-            state.precio = 0
+            state.precioTotal = 0
             state.cantidad = 0
         }
-
     }
 })
 
