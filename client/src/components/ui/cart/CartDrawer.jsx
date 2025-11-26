@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom"
 
 import { useDispatch, useSelector } from 'react-redux'
 import { removeFromCart, updateQuantity, clearCart } from '../../../features/cartSlice'
+import { createPedido } from '../../../features/pedidosSlice'
+import { toast } from 'react-toastify'
 
 const imagesUrl = import.meta.env.VITE_APP_API_IMAGES_URL
 
@@ -27,8 +29,17 @@ export function CartDrawer({ isOpen, onClose }) {
       return
     }
 
+    const payload = {
+       clienteId: user.id,
+       detalles: cart.map((it) => ({ productoId: it.id, cantidad: it.cantidad })),
+     }
+ 
+     dispatch(createPedido(payload))
+     toast.success("Pedido creado! Ahora confírmalo para finalizarlo.")   
     // Navegar a pedidos con el carrito
-    navigate("/pedidos", { state: { cart } })
+    dispatch(clearCart())
+    navigate("/pedidos", { replace: true }) 
+    //navigate("/pedidos", { state: { cart } })
     onClose()
   }
 

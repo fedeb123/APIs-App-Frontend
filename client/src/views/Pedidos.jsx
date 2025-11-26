@@ -145,14 +145,14 @@ export default function Pedidos() {
 
   return (
     <div className="container mx-auto py-10">
-      <div className="mb-6">
+      {/* <div className="mb-6">
         <button
           onClick={handleCreatePedido}
           className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded"
         >
           Crear pedido desde carrito
         </button>
-      </div>
+      </div> */}
       {pedidoAConfirmar && (
         <ConfirmationModal
           pedido={pedidoAConfirmar}
