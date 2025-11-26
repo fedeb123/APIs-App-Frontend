@@ -32,11 +32,13 @@ export const fetchUser = createAsyncThunk('auth/user', async() => {
 
 export const logoutAndClear = () => (dispatch) => {
   dispatch({ type: PURGE })
+  dispatch(logout())
 }
 
-export const updateUser = createAsyncThunk('auth/updateUser', async(userId, formData) => {
-    if (userId && formData) {
-        const { data } = await requester.put(updateUserUrl + userId, formData);
+export const updateUser = createAsyncThunk('auth/updateUser', async(updatedUser) => {
+    console.log(updatedUser)
+    if (updatedUser) {
+        const { data } = await requester.put(updateUserUrl + updatedUser.id, updatedUser.payload);
         return data;
     }    
 })

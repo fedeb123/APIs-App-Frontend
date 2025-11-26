@@ -47,6 +47,7 @@ export default function Perfil() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     const payload = {
       nombre: formState.nombre,
       apellido: formState.apellido,
@@ -54,7 +55,13 @@ export default function Perfil() {
       direccion: formState.direccion,
       password: formState.newPassword,
     };
-    dispatchRedux(updateUser(user, payload))
+
+    const updatedUser = {
+      id: user.id,
+      payload: payload
+    }
+    
+    dispatchRedux(updateUser(updatedUser))
   };
 
   const handleLogout = () => {
