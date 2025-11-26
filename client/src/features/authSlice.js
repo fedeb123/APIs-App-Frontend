@@ -31,7 +31,7 @@ export const fetchUser = createAsyncThunk('auth/user', async() => {
 })
 
 export const logoutAndClear = () => (dispatch) => {
-  dispatch({ type: PURGE })
+  dispatch({ type: PURGE, result: () => {} })
   dispatch(logout())
 }
 
