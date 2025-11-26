@@ -149,7 +149,7 @@ export default function Admin() {
     }
 
     if (editingProducto) {
-      dispatch(updateProducto({ id: editingProducto.id, payload: formData }))
+      dispatch(updateProducto({ id: editingProducto.id,formData }))
     } else {
       dispatch(createProducto(formData))
     }

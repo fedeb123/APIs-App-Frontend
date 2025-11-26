@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
 import requester from "./interceptor/axios";
+import { toast } from "react-toastify";
 
 const apiUrl = import.meta.env.VITE_APP_API_URL;
 const productosUrl = `${apiUrl}/productos`
@@ -79,21 +80,33 @@ const productosSlice = createSlice({
 
             .addCase(createProducto.fulfilled, (state, action) => {
                 state.productos.push(action.payload)
+                toast.success("Producto creado con éxito")
             })
-
+            .addCase(createProducto.rejected, () => {
+                toast.error("Error al crear el producto")
+            })
+            
             .addCase(updateProducto.fulfilled, (state, action) => {
                 const index = state.productos.findIndex(p => p.id === action.payload.id);
                 if (index !== -1) state.productos[index] = action.payload;
+                toast.success("Producto actualizado con éxito")
+            })
+            .addCase(updateProducto.rejected, () => {
+                toast.error("Error al actualizar el producto")
             })
 
             .addCase(deleteProducto.fulfilled, (state, action) => {
                 const id = action.payload
                 const producto = state.productos.find(p => p.id === id)
                 state.productos = state.productos.filter(p => p.id !== id)
-                
                 if (producto) {
                     state.productosDescontinuados.push({ ...producto, activo: false })
+                    toast.success("Producto descontinuado con éxito")
                 }
+            })
+
+            .addCase(deleteProducto.rejected, () => {
+                toast.error("Error al descontinuar el producto")
             })
 
             .addCase(reactivarProducto.fulfilled, (state, action) => {
@@ -102,7 +115,12 @@ const productosSlice = createSlice({
                 if (producto){   
                     state.productosDescontinuados = state.productosDescontinuados.filter(p => p.id !== producto.id)
                     state.productos.push(producto)
+                    toast.success("Producto reactivado con éxito")
                 }
+            })
+
+            .addCase(reactivarProducto.rejected, () => {
+                toast.error("Error al reactivar el producto")
             })
     }
 })
