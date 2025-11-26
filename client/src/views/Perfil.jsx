@@ -4,8 +4,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "../components/ui/Card"
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { User, Mail, Lock, Phone } from "lucide-react"; // Importa el ícono del teléfono
-import { useDispatch, useSelector } from "react-redux";
-import { updateUser, fetchUser as refreshUser, logout } from "../features/authSlice";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchUser, updateUser, logoutAndClear } from "../features/authSlice";
 
 function formReducer(state, action) {
   if (action.type === 'UPDATE_FIELD') {
@@ -16,37 +16,33 @@ function formReducer(state, action) {
 
 export default function Perfil() {
   const navigate = useNavigate();
-    const dispatch = useDispatch();
-    const { user, loading: userLoading } = useSelector((s) => s.auth || {});  
+  const dispatchRedux = useDispatch();
+  const { user, loading: userLoading, error } = useSelector((state) => state.auth);
   
   const [isEditing, setIsEditing] = useState(false);
-  const [formState, dispatchForm] = useReducer(formReducer, {});
-  const [submitting, setSubmitting] = useState(false);
+  const [formState, dispatch] = useReducer(formReducer, {});
 
   useEffect(() => {
-    if (user) {
-      // precarga formulario con datos del usuario
-+     dispatchForm({ type: "UPDATE_FIELD", field: "nombre", value: user.nombre });
-      dispatchForm({ type: "UPDATE_FIELD", field: "apellido", value: user.apellido });
-      dispatchForm({ type: "UPDATE_FIELD", field: "telefono", value: user.telefono });
-      dispatchForm({ type: "UPDATE_FIELD", field: "direccion", value: user.direccion });
-      dispatchForm({ type: "UPDATE_FIELD", field: "newPassword", value: "" });
-    }
-  }, [user]);
+    dispatchRedux(fetchUser());
+  }, [dispatchRedux])
 
- 
+  useEffect(() => {
+    if (error) {
+      alert(`Error al actualizar: ${updateError.body?.message || 'Error de servidor'}`);
+    }
+  }, [error]);
 
   const handleEditClick = () => {
     // Carga el estado del formulario con los datos actuales del usuario
-    Object.keys(user || {}).forEach((key) => {
-      dispatchForm({ type: "UPDATE_FIELD", field: key, value: user[key] });
+    Object.keys(user).forEach(key => {
+      dispatch({ type: 'UPDATE_FIELD', field: key, value: user[key] });
     });
-    dispatchForm({ type: "UPDATE_FIELD", field: "newPassword", value: "" });
-  setIsEditing(true);
+    dispatch({ type: 'UPDATE_FIELD', field: 'newPassword', value: '' });
+    setIsEditing(true);
   };
 
   const handleFormChange = (e) => {
-    dispatchForm({ type: "UPDATE_FIELD", field: e.target.name, value: e.target.value });
+    dispatch({ type: 'UPDATE_FIELD', field: e.target.name, value: e.target.value });
   };
 
   const handleSubmit = (e) => {
@@ -58,35 +54,12 @@ export default function Perfil() {
       direccion: formState.direccion,
       password: formState.newPassword,
     };
-    if (!user?.id) {
-      alert("Usuario no disponible.");
-      return;
-    }
-    setSubmitting(true);
-    dispatch(
-      updateUser({
-        id: user.id,
-        ...payload,
-      }),
-    )
-      .unwrap()
-      .then(() => {
-        alert("Perfil actualizado con éxito.");
-        setIsEditing(false);
-        dispatch(refreshUser());
-      })
-      .catch((err) => {
-        console.error("Error actualizando perfil:", err);
-        alert(err?.message || err?.body?.message || "Error al actualizar perfil");
-      })
-      .finally(() => setSubmitting(false));
-
+    dispatchRedux(updateUser(user, payload))
   };
 
   const handleLogout = () => {
-      dispatch(logout());    
+    dispatchRedux(logoutAndClear())
     navigate("/");
-    window.location.reload(); // Para asegurar que el header se actualice
   };
 
   if (userLoading) {
@@ -181,7 +154,7 @@ export default function Perfil() {
               <div><label>Dirección</label><Input name="direccion" value={formState.direccion || ''} onChange={handleFormChange} /></div>
               <div><label>Nueva Contraseña (opcional)</label><Input name="newPassword" type="password" placeholder="Dejar en blanco para no cambiar" value={formState.newPassword || ''} onChange={handleFormChange} /></div>
               <div className="flex gap-2 pt-4">
-                <Button type="submit" className="w-full" disabled={submitting}>{submitting ? "Guardando..." : "Guardar Cambios"}</Button>
+                <Button type="submit" className="w-full">Guardar Cambios</Button>
                 <Button type="button" variant="outline" onClick={() => setIsEditing(false)} className="w-full">Cancelar</Button>
               </div>
             </form>

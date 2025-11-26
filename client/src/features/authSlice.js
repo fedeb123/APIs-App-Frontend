@@ -6,6 +6,7 @@ const apiUrl = import.meta.env.VITE_APP_API_URL;
 const registerUrl = `${apiUrl}/v1/auth/register`
 const loginUrl = `${apiUrl}/v1/auth/authenticate`
 const userUrl = `${apiUrl}/usuarios/usuario`
+const updateUserUrl = `${apiUrl}/usuarios/`
 
 const initialState = {
     user: null,
@@ -32,6 +33,13 @@ export const fetchUser = createAsyncThunk('auth/user', async() => {
 export const logoutAndClear = () => (dispatch) => {
   dispatch({ type: PURGE })
 }
+
+export const updateUser = createAsyncThunk('auth/updateUser', async(userId, formData) => {
+    if (userId && formData) {
+        const { data } = await requester.put(updateUserUrl + userId, formData);
+        return data;
+    }    
+})
 
 const authSlice = createSlice({
     name: 'auth',
@@ -76,6 +84,18 @@ const authSlice = createSlice({
             state.error = action.error?.message;
         })
         .addCase(fetchUser.fulfilled, (state, action) => {
+            state.loading = false;
+            state.user = action.payload;
+        })
+        .addCase(updateUser.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        })
+        .addCase(updateUser.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.error?.message;
+        })
+        .addCase(updateUser.fulfilled, (state, action) => {
             state.loading = false;
             state.user = action.payload;
         })
