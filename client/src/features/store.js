@@ -11,6 +11,7 @@ import categoriasReducer from './categoriasSlice'
 import usuariosReducer from './usuariosSlice'
 import { attachInterceptor } from './interceptor/axios' 
 import pedidosReducer from "./pedidosSlice"
+import cartSlice from "./cartSlice"
 
 const persistConfig = {
     key: "auth",
@@ -26,7 +27,8 @@ const store = configureStore({
         auth: authPersistedReducer,
         categorias: categoriasReducer,
         pedidos: pedidosReducer,
-        usuarios: usuariosReducer
+        usuarios: usuariosReducer,
+        cart: cartSlice
     },
     //Ignorar warning de usar PURGE en authSlice
     //https://redux-toolkit.js.org/usage/usage-guide#working-with-non-serializable-data
