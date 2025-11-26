@@ -1,17 +1,19 @@
 import { X, Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react'
-import { useCart } from "../../../context/CartContext"
 import { useNavigate } from "react-router-dom"
-import useAuth from "../../../hooks/useAuth"
+
+import { useDispatch, useSelector } from 'react-redux'
+import { removeFromCart, updateQuantity, clearCart } from '../../../features/cartSlice'
 
 const imagesUrl = import.meta.env.VITE_APP_API_IMAGES_URL
 
 export function CartDrawer({ isOpen, onClose }) {
-  const { cart, removeFromCart, updateQuantity, getCartTotal, clearCart } = useCart()
+  const { cart, precioTotal, cantidad } = useSelector((state) => state.cart)
+  const { user } = useSelector((state) => state.auth)
   const navigate = useNavigate()
-  const { user, token } = useAuth()
+  const dispatch = useDispatch()
 
   const handleCheckout = () => {
-    if (!user || !token) {
+    if (!user) {
       alert("Tienes que estar logueado para comprar")
       onClose()
       navigate("/login")
@@ -82,7 +84,7 @@ export function CartDrawer({ isOpen, onClose }) {
                     {/* Quantity Controls */}
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => updateQuantity(item.id, item.cantidad - 1)}
+                        onClick={() => dispatch(updateQuantity({id: item.id, cantidadNueva: item.cantidad - 1}))}
                         className="p-1 hover:bg-gray-100 rounded transition-colors"
                         disabled={item.cantidad <= 1}
                       >
@@ -92,14 +94,14 @@ export function CartDrawer({ isOpen, onClose }) {
                         {item.cantidad}
                       </span>
                       <button
-                        onClick={() => updateQuantity(item.id, item.cantidad + 1)}
+                        onClick={() => dispatch(updateQuantity({id: item.id, cantidadNueva: item.cantidad + 1}))}
                         className="p-1 hover:bg-gray-100 rounded transition-colors"
                         disabled={item.cantidad >= item.stock}
                       >
                         <Plus className="h-4 w-4" />
                       </button>
                       <button
-                        onClick={() => removeFromCart(item.id)}
+                        onClick={() => dispatch(removeFromCart({id: item.id}))}
                         className="ml-auto p-1 hover:bg-red-50 rounded transition-colors text-red-500"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -117,7 +119,7 @@ export function CartDrawer({ isOpen, onClose }) {
           <div className="border-t px-6 py-4 space-y-3">
             <div className="flex justify-between items-center text-lg font-bold">
               <span>Total:</span>
-              <span className="text-orange-600">${getCartTotal().toFixed(2)}</span>
+              <span className="text-orange-600">${precioTotal}</span>
             </div>
             
             <button
@@ -128,7 +130,7 @@ export function CartDrawer({ isOpen, onClose }) {
             </button>
             
             <button
-              onClick={clearCart}
+              onClick={() => dispatch(clearCart())}
               className="w-full text-gray-600 hover:text-gray-800 text-sm font-medium py-2"
             >
               Vaciar carrito

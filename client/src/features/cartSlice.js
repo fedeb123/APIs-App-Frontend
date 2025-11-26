@@ -17,7 +17,7 @@ const calcularTotales = (cart) => {
         total.precioTotal += item.precio * item.cantidad
         total.cantidad += item.cantidad
         return total
-    })
+    }, {precioTotal: 0, cantidad: 0})
 }
 
 
@@ -34,23 +34,24 @@ const cartSlice = createSlice({
             }
 
             const itemExistente = state.cart.find((item) => {
-                item.id === producto.id
+                return item.id === producto.id
             })
 
             if (!itemExistente) {
-                state.cart.push =({...producto, cantidad: cantidad})
+                state.cart.push({...producto, cantidad: cantidad})
                 const totales = calcularTotales(state.cart)
                 state.precioTotal = totales.precioTotal
                 state.cantidad = totales.cantidad
             }
         },
         removeFromCart: (state, action) => {
-            const id = action.payload
+            const { id } = action.payload
 
             if (!id) return;
 
             state.cart = state.cart.filter((item) => {
-                item.id !== id
+                return item.id !== id
+                
             })
 
             const totales = calcularTotales(state.cart)
