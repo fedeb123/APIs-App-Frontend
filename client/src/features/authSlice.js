@@ -36,7 +36,6 @@ export const logoutAndClear = () => (dispatch) => {
 }
 
 export const updateUser = createAsyncThunk('auth/updateUser', async(updatedUser) => {
-    console.log(updatedUser)
     if (updatedUser) {
         const { data } = await requester.put(updateUserUrl + updatedUser.id, updatedUser.payload);
         return data;
