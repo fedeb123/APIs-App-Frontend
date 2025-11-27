@@ -78,50 +78,43 @@ export default function Admin() {
   },[dispatch])
   
   const handleSaveCategoria = () => {
-    const nombre = categoriaForm.nombre.trim()
-    const descripcion = categoriaForm.descripcion.trim()
+    const nombre = (categoriaForm.nombre ?? "").trim()
+    const descripcion = (categoriaForm.descripcion ?? "").trim()
 
     if (editingCategoria) {
-      // update
-      dispatch(updateCategoria({
-        id: editingCategoria.id,
-        payload: { nombreCategoria: nombre, descripcion: descripcion }
-      }))
+      //update
+      const nombreActual = editingCategoria?.nombre ?? ""
+      const descripcionActual = editingCategoria?.descripcion ?? ""
+      const payload = {}
+
+      if (nombre && nombre !== nombreActual) {
+        payload.nombreCategoria = nombre
+      }
+
+      if (descripcion && descripcion !== descripcionActual) {
+        payload.descripcion = descripcion
+      }
+
+      if (Object.keys(payload).length === 0) {
+        toast.info("No hay Cambios, Abortando")
+        setShowCategoriaModal(false)
+        return
+      }
+
+      dispatch(updateCategoria({ id: editingCategoria.id, payload: { nombreCategoria: nombre, descripcion: descripcion }}))
     } else {
+
+      if (!nombre) {
+        toast.error("El nombre de la categoria es Obligatorio")
+        return
+      }
+
       // create
-      dispatch(createCategorias({
-        nombreCategoria: nombre,
-        descripcion: descripcion
-      }))
+      dispatch(createCategorias({ nombreCategoria: nombre, descripcion: descripcion }))
     }
 
     setShowCategoriaModal(false)
   }
-
-  // const handleSaveCategoria = () => {
-  //   const nombreActual = editingCategoria?.nombreCategoria ?? ""
-  //   const descripcionActual = editingCategoria?.descripcion ?? ""
-  //   const nombreNuevo = (categoriaForm.nombre ?? "").trim()
-  //   const descripcionNueva = (categoriaForm.descripcion ?? "").trim()
-
-  //   if (editingCategoria) {
-  //     const payload = {}
-  //     if (nombreNuevo && nombreNuevo !== nombreActual) {
-  //       payload.nombreCategoria = nombreNuevo
-  //     }
-  //     if (descripcionNueva !== descripcionActual) {
-  //       payload.descripcion = descripcionNueva
-  //     }
-  //     if (Object.keys(payload).length === 0) {
-  //       alert("No hay cambios para guardar.")
-  //       return
-  //     }
-  //     setApiConfig({ location: `categorias/${editingCategoria.id}`, method: "PUT", payload })
-  //   } else {
-  //     const payload = { nombreCategoria: nombreNuevo, descripcion: descripcionNueva }
-  //     setApiConfig({ location: "categorias", method: "POST", payload })
-  //   }
-  // }
 
   const handleEditCategoria = (categoria) => {
     setEditingCategoria(categoria)
@@ -153,12 +146,6 @@ export default function Admin() {
     } else {
       dispatch(createProducto(formData))
     }
-
-    // setApiConfig({
-    //   location: editingProducto ? `productos/${editingProducto.id}` : `productos`,
-    //   method: editingProducto ? "PUT" : "POST",
-    //   payload: formData,
-    // }) // NO DEBERIA ESTAR ACA (?????????)
 
     setShowProductoModal(false)
     setProductoForm({ nombre: "", descripcion: "", precio: "", stock: "", categoriaId: "", imagenFile: null })
