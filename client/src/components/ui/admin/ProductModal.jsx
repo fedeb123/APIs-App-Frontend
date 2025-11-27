@@ -2,16 +2,17 @@ import { X } from "lucide-react"
 import { Card } from "../Card"
 import { Input } from "../Input"
 import { Button } from "../Button"
+import { toast } from "react-toastify"
 
 export function ProductModal({ show, editing, form, categories, onChange, onSave, onClose }) {
   if (!show) return null
 
   const handleSaveClick = () => {
-    if (!form.nombre.trim()) return alert("El nombre es obligatorio")
-    if (!form.descripcion.trim()) return alert("La descripción es obligatoria")
-    if (!form.precio || isNaN(Number(form.precio))) return alert("El precio es inválido")
-    if (!form.stock || isNaN(Number(form.stock))) return alert("El stock es inválido")
-    if (!form.categoriaId) return alert("Debe seleccionar una categoría")
+    if (!form.nombre.trim()) return toast.info("El nombre es obligatorio")
+    if (!form.descripcion.trim()) return toast.info("La descripción es obligatoria")
+    if (!form.precio || isNaN(Number(form.precio)) || form.precio < 0) return toast.error("El precio es inválido")
+    if (!form.stock || isNaN(Number(form.stock)) || form.stock < 0) return toast.error("El stock es inválido")
+    if (!form.categoriaId) return toast.info("Debe seleccionar una categoría")
     onSave()
   }
 
