@@ -4,7 +4,7 @@ import { User, ShoppingCart } from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux'
 import { UserDropdown } from "./ui/header/UserDropdown"
 import { CartDrawer } from "./ui/cart/CartDrawer"
-
+import { clearCart } from "../features/cartSlice"
 import { logoutAndClear } from "../features/authSlice"
 
 export function Header() {
@@ -21,6 +21,7 @@ export function Header() {
 
   const handleLogout = () => {
     dispatch(logoutAndClear());
+    dispatch(clearCart())
     setIsDropdownOpen(false)
     navigate("/")
   }

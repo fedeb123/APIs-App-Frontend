@@ -7,7 +7,6 @@ const imagesUrl = import.meta.env.VITE_APP_API_IMAGES_URL
 export function ProductCard({ product, onAddToCart }) {
 
   const  {user} = useSelector((state)=>state.auth)
-console.log("USER DESDE ProductCard:", user);
 
   return (
     <Card className="w-56 overflow-hidden hover:shadow-xl transition-shadow duration-300 group">

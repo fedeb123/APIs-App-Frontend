@@ -90,7 +90,7 @@ const categoriasSlice = createSlice({
             }
         })
         .addCase(updateCategoria.rejected, () => {
-            toast.error("Error al actualizar la categoría.");
+            toast.error("Error al actualizar la categoría: Posible Duplicacion de Nombres.");
         })
         .addCase(deleteCategoria.fulfilled, (state, action) => {
             const id = action.payload;

@@ -10,6 +10,8 @@ import { createPedido } from "../features/pedidosSlice"
 import { fetchPedidosUsuario, confirmPedido } from "../features/pedidosSlice"
 import { clearCart } from "../features/cartSlice"
 
+import { fetchProductos } from "../features/productosSlice"
+
 import { toast } from "react-toastify"
 
 export default function Pedidos() {
@@ -27,6 +29,7 @@ export default function Pedidos() {
 
   useEffect(() => {
     dispatch(fetchPedidosUsuario())
+    dispatch(fetchProductos())
   }, [dispatch])
 
   useEffect(() => {

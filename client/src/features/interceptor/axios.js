@@ -1,5 +1,7 @@
 import axios from 'axios'
 import { logoutAndClear } from '../authSlice';
+import { clearCart } from '../cartSlice';
+import { toast } from 'react-toastify';
 
 const apiUrl = import.meta.env.VITE_APP_API_URL;
 
@@ -33,7 +35,16 @@ export function attachInterceptor (store) {
 
     requester.interceptors.response.use((response) => response, (error) => {
         if (error.response?.status === 401) {
+            toast.error('Sesion Expirada o Invalida. Loguee de Nuevo.')
             store.dispatch(logoutAndClear());
+            store.dispatch(clearCart());
+
+        } else {
+            if (error.response?.status === 403) {
+                toast.error('Credenciales Invalidas')
+                store.dispatch(logoutAndClear());
+                store.dispatch(clearCart());
+            }
         }
         return Promise.reject(error);
     })

@@ -1,7 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit'
 
 //Persistence
-import { persistStore, persistReducer, PURGE } from 'redux-persist'
+import { persistStore, persistReducer, PURGE, REGISTER, REHYDRATE, FLUSH, PAUSE, PERSIST } from 'redux-persist'
 import storage from "redux-persist/lib/storage"
 import autoMergeLevel2 from "redux-persist/lib/stateReconciler/autoMergeLevel2";
 
@@ -30,12 +30,12 @@ const store = configureStore({
         usuarios: usuariosReducer,
         cart: cartSlice
     },
-    //Ignorar warning de usar PURGE en authSlice
+    //Ignorar warning de usar PURGE, REGISTER, REHYDRATE, FLUSH, PAUSE, PERSIST en authSlice
     //https://redux-toolkit.js.org/usage/usage-guide#working-with-non-serializable-data
     middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActions: [PURGE],
+        ignoredActions: [PURGE, REGISTER, REHYDRATE, FLUSH, PAUSE, PERSIST],
       },
     }),
 });
