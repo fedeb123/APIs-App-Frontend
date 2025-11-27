@@ -1,7 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
 
-const apiUrl = import.meta.env.VITE_APP_API_URL;
-
 const initialState = {
     cart: [],
     precioTotal: 0,
