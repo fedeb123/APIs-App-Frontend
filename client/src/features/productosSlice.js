@@ -37,12 +37,16 @@ export const createProducto = createAsyncThunk('productos/create', async(formDat
     return data
 });
 
-export const updateProducto = createAsyncThunk('productos/update', async({ id, formData }) => {
-    const { data } = await requester.put(`${productosUrl}/${id}`, formData, {
-        headers: { "Content-Type": "multipart/form-data" }
-    })
-    return data
-});
+export const updateProducto = createAsyncThunk(
+    'productos/update',
+    async ({ id, formData }) => {
+        await requester.put(`${productosUrl}/${id}`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+
+        return { id, formData };
+    }
+);
 
 export const deleteProducto = createAsyncThunk('productos/delete', async(id) => {
     await requester.delete(`${productosUrl}/${id}`)
@@ -87,9 +91,27 @@ const productosSlice = createSlice({
             })
             
             .addCase(updateProducto.fulfilled, (state, action) => {
-                const index = state.productos.findIndex(p => p.id === action.payload.id);
-                if (index !== -1) state.productos[index] = action.payload;
-                toast.success("Producto actualizado con éxito")
+                const { id, formData } = action.payload;
+
+                const index = state.productos.findIndex(p => p.id === id);
+                if (index === -1) return;
+
+                const productoViejo = state.productos[index];
+
+                // reconstruimos el actualizado
+                const productoActualizado = {
+                    ...productoViejo,
+                    nombre: formData.get("nombre"),
+                    descripcion: formData.get("descripcion"),
+                    precio: parseFloat(formData.get("precio")),
+                    stock: parseInt(formData.get("stock")),
+                    categoriaId: parseInt(formData.get("categoriaId")),
+                    // si hay imagen nueva:
+                    imagen: formData.get("imagen") ? URL.createObjectURL(formData.get("imagen")) : productoViejo.imagen
+                };
+
+                state.productos[index] = productoActualizado;
+                toast.success("Producto actualizado con éxito");
             })
             .addCase(updateProducto.rejected, () => {
                 toast.error("Error al actualizar el producto")
