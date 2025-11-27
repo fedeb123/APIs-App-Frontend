@@ -111,7 +111,7 @@ export default function Admin() {
       }
 
       // create
-      dispatch(createCategorias({ nombreCategoria: nombre, descripcion: descripcion }))
+      dispatch(createCategorias({ nombreCategoria: nombreNuevo, descripcion: descripcionNueva }))
     }
 
     setShowCategoriaModal(false)
