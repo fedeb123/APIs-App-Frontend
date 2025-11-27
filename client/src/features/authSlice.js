@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
 import requester from "./interceptor/axios";
 import { PURGE } from "redux-persist";
+import { toast } from "react-toastify";
 
 const apiUrl = import.meta.env.VITE_APP_API_URL;
 const registerUrl = `${apiUrl}/v1/auth/register`
@@ -99,6 +100,7 @@ const authSlice = createSlice({
         .addCase(updateUser.fulfilled, (state, action) => {
             state.loading = false;
             state.user = action.payload;
+            toast.success("Edición de perfil completada.")
         })
     }
 })

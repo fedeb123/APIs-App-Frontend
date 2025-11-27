@@ -1,10 +1,14 @@
 import { ShoppingCart } from "lucide-react"
 import { Card } from "../Card"
 import { Button } from "../Button"
-
+import { useSelector} from "react-redux"
 const imagesUrl = import.meta.env.VITE_APP_API_IMAGES_URL
 
 export function ProductCard({ product, onAddToCart }) {
+
+  const  {user} = useSelector((state)=>state.auth)
+console.log("USER DESDE ProductCard:", user);
+
   return (
     <Card className="w-56 overflow-hidden hover:shadow-xl transition-shadow duration-300 group">
       <div className="aspect-square bg-gradient-to-br from-orange-100 to-pink-100 p-6">
@@ -28,7 +32,7 @@ export function ProductCard({ product, onAddToCart }) {
                 : `${product.stock} en stock`}
             </p>
           </div>
-          <Button onClick={() => onAddToCart(product)} size="sm" className="gap-2" disabled={product.stock === 0}>
+          <Button onClick={() => onAddToCart(product)} size="sm" className="gap-2" disabled={product.stock === 0 || user?.rol?.nombre ==="ADMIN"}>
             <ShoppingCart className="h-4 w-4" />
             Agregar
           </Button>
