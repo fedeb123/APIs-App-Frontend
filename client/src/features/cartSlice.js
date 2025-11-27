@@ -1,8 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
-import requester from "./interceptor/axios";
 
 const apiUrl = import.meta.env.VITE_APP_API_URL;
-const pedidosUrl = `${apiUrl}/pedidos`
 
 const initialState = {
     cart: [],
