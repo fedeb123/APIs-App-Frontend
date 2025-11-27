@@ -137,7 +137,7 @@ export default function Pedidos() {
   )
 
   const pedidosConfirmados = useMemo(
-    () => pedidos.filter((p) => p.estado === "CONFIRMADO"),
+    () => pedidos.filter((p) => p.estado !== "PENDIENTE"),
     [pedidos],
   )
 
