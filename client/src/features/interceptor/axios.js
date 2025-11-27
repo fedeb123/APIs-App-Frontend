@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { logoutAndClear } from '../authSlice';
+import { clearCart } from '../cartSlice';
 
 const apiUrl = import.meta.env.VITE_APP_API_URL;
 
@@ -34,6 +35,7 @@ export function attachInterceptor (store) {
     requester.interceptors.response.use((response) => response, (error) => {
         if (error.response?.status === 401) {
             store.dispatch(logoutAndClear());
+            store.dispatch(clearCart());
         }
         return Promise.reject(error);
     })

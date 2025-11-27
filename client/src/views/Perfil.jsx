@@ -7,6 +7,7 @@ import { User, Mail, Lock, Phone } from "lucide-react"; // Importa el ícono del
 import { useSelector, useDispatch } from "react-redux";
 import { fetchUser, updateUser, logoutAndClear } from "../features/authSlice";
 import { toast } from "react-toastify";
+import { clearCart } from "../features/cartSlice";
 
 function formReducer(state, action) {
   if (action.type === 'UPDATE_FIELD') {
@@ -67,6 +68,7 @@ export default function Perfil() {
 
   const handleLogout = () => {
     dispatchRedux(logoutAndClear())
+    dispatchRedux(clearCart())
     navigate("/");
   };
 
