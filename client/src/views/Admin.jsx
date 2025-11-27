@@ -78,21 +78,21 @@ export default function Admin() {
   },[dispatch])
   
   const handleSaveCategoria = () => {
-    const nombre = (categoriaForm.nombre ?? "").trim()
-    const descripcion = (categoriaForm.descripcion ?? "").trim()
+    const nombreNuevo = (categoriaForm.nombre ?? "").trim()
+    const descripcionNueva = (categoriaForm.descripcion ?? "").trim()
 
     if (editingCategoria) {
       //update
-      const nombreActual = editingCategoria?.nombre ?? ""
+      const nombreActual = editingCategoria?.nombreCategoria ?? ""
       const descripcionActual = editingCategoria?.descripcion ?? ""
       const payload = {}
 
-      if (nombre && nombre !== nombreActual) {
-        payload.nombreCategoria = nombre
+      if (nombreNuevo && nombreNuevo !== nombreActual) {
+        payload.nombreCategoria = nombreNuevo
       }
 
-      if (descripcion && descripcion !== descripcionActual) {
-        payload.descripcion = descripcion
+      if (descripcionNueva && descripcionNueva !== descripcionActual) {
+        payload.descripcion = descripcionNueva
       }
 
       if (Object.keys(payload).length === 0) {
@@ -101,10 +101,11 @@ export default function Admin() {
         return
       }
 
-      dispatch(updateCategoria({ id: editingCategoria.id, payload: { nombreCategoria: nombre, descripcion: descripcion }}))
+      dispatch(updateCategoria({ id: editingCategoria.id, payload }))
+
     } else {
 
-      if (!nombre) {
+      if (!nombreNuevo) {
         toast.error("El nombre de la categoria es Obligatorio")
         return
       }
